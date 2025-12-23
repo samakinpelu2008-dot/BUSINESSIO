@@ -1,220 +1,179 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<title>Businessio Admin Dashboard</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin Dashboard • Businessio</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
-:root{--primary:#1f4cff;--bg:#f5f7fb}
-body{margin:0;font-family:Inter,Arial;background:var(--bg);color:#111}
-header{background:linear-gradient(135deg,#1f4cff,#4f46e5);color:#fff;padding:25px}
-header h1{margin:0;font-size:28px}
-.container{max-width:1300px;margin:auto;padding:20px}
-.card{background:#fff;border-radius:12px;padding:18px;margin-bottom:20px;box-shadow:0 8px 25px rgba(0,0,0,.05)}
-table{width:100%;border-collapse:collapse;font-size:14px}
-th,td{padding:10px;border-bottom:1px solid #eee;text-align:left}
-th{background:#f8fafc;font-weight:600}
-button{padding:8px 12px;border:none;border-radius:6px;cursor:pointer;font-size:13px}
-.approve{background:#16a34a;color:#fff}
-.reject{background:#dc2626;color:#fff}
-.delete{background:#000;color:#fff}
-.send{background:var(--primary);color:#fff}
-.flex{display:flex;gap:10px;flex-wrap:wrap}
-select,input{padding:8px;border-radius:6px;border:1px solid #ddd}
-#chatBox{height:220px;border:1px solid #ddd;padding:10px;overflow-y:auto;margin-bottom:10px}
-.chat-admin{color:#16a34a;font-weight:600}
-.chat-user{color:#2563eb;font-weight:600}
+body{margin:0;font-family:Arial;background:#f4f6fb;display:flex}
+.sidebar{
+  width:240px;background:#111827;color:#fff;
+  padding:20px;min-height:100vh
+}
+.sidebar h2{margin-top:0}
+.sidebar button{
+  width:100%;margin-bottom:10px;
+  padding:12px;border:none;border-radius:10px;
+  background:#1f2937;color:#fff;
+  cursor:pointer;font-weight:600
+}
+.sidebar button:hover{background:#374151}
+.main{
+  flex:1;padding:25px
+}
+.card{
+  background:#fff;padding:20px;border-radius:16px;
+  box-shadow:0 8px 25px rgba(0,0,0,.06);
+  margin-bottom:20px
+}
+.row{
+  display:flex;justify-content:space-between;
+  align-items:center;flex-wrap:wrap;gap:10px
+}
+button.action{
+  padding:8px 12px;border:none;border-radius:8px;
+  font-weight:700;cursor:pointer
+}
+.red{background:#fee2e2;color:#991b1b}
+.blue{background:#dbeafe;color:#1e40af}
+.green{background:#dcfce7;color:#166534}
+.small{font-size:13px;color:#555}
 </style>
 </head>
+
 <body>
 
-<header>
-  <h1>Businessio — Admin Dashboard</h1>
-  <p>Monitor • Approve • Control • Analyze</p>
-</header>
-
-<div class="container">
-
-<!-- PLATFORM STATS -->
-<div class="card">
-  <h3>Platform Statistics</h3>
-  <p>Registered Users: <b id="usersCount">0</b></p>
+<div class="sidebar">
+  <h2>Businessio Admin</h2>
+  <button onclick="load('businesses')">Businesses</button>
+  <button onclick="load('users')">Users</button>
+  <button onclick="load('deals')">Successful Deals</button>
+  <button onclick="load('ads')">Ads</button>
+  <button onclick="load('analytics')">Analytics</button>
+  <button onclick="logout()">Logout</button>
 </div>
 
-<!-- BUSINESSES -->
-<div class="card">
-  <h3>Businesses</h3>
-  <table id="businessTable">
-    <tr>
-      <th>Name</th><th>Sales</th><th>Stars</th><th>Badge</th><th>Clicks</th><th>Status</th><th>Action</th>
-    </tr>
-  </table>
-</div>
-
-<!-- APPLICATIONS -->
-<div class="card">
-  <h3>Job / Business Applications</h3>
-  <table id="appTable">
-    <tr>
-      <th>User</th><th>Business ID</th><th>Status</th><th>Action</th>
-    </tr>
-  </table>
-</div>
-
-<!-- PAYMENTS -->
-<div class="card">
-  <h3>Payments</h3>
-  <table id="payTable">
-    <tr>
-      <th>User</th><th>Business</th><th>Amount</th><th>Bank</th><th>Status</th>
-    </tr>
-  </table>
-</div>
-
-<!-- ADS -->
-<div class="card">
-  <h3>Ads Analytics (30 Seconds)</h3>
-  <table id="adsTable">
-    <tr><th>Ad</th><th>Views (30s)</th></tr>
-  </table>
-</div>
-
-<!-- CHAT -->
-<div class="card">
-  <h3>Approved Chats</h3>
-  <select id="chatSelect">
-    <option value="">Select Application</option>
-  </select>
-  <div id="chatBox"></div>
-  <div class="flex">
-    <input id="chatMsg" placeholder="Type message">
-    <button class="send" onclick="sendChat()">Send</button>
-  </div>
-</div>
-
+<div class="main" id="content">
+  <h2>Welcome Admin</h2>
+  <p class="small">Select a section from the left</p>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-import { getFirestore, collection, onSnapshot, doc, updateDoc, deleteDoc, addDoc, increment } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
+import {
+  getFirestore, collection, getDocs, doc, updateDoc, deleteDoc
+} from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDeFlOeRoiNjqH9LAclnqnehXNY6scPqzE",
-  authDomain: "businessio-37c69.firebaseapp.com",
-  projectId: "businessio-37c69"
+const firebaseConfig={
+  apiKey:"AIzaSyDeFlOeRoiNjqH9LAclnqnehXNY6scPqzE",
+  authDomain:"businessio-37c69.firebaseapp.com",
+  projectId:"businessio-37c69"
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
 
-/* ===== USERS ===== */
-onSnapshot(collection(db,"users"), s=>{
-  usersCount.innerText = s.size;
+let admin=null;
+
+onAuthStateChanged(auth,async u=>{
+  if(!u) location.href="login.html";
+
+  // check admin access
+  const admins=await getDocs(collection(db,"admins"));
+  const allowed=admins.docs.some(d=>d.data().email===u.email);
+
+  if(!allowed){
+    alert("Access denied");
+    signOut(auth);
+    return;
+  }
+
+  admin=u;
 });
 
-/* ===== BUSINESSES ===== */
-onSnapshot(collection(db,"businesses"), snap=>{
-  businessTable.innerHTML = `
-  <tr><th>Name</th><th>Sales</th><th>Stars</th><th>Badge</th><th>Clicks</th><th>Status</th><th>Action</th></tr>`;
-  snap.forEach(d=>{
-    const b=d.data();
-    const realSales=Math.max(b.sales-(b.complaints||0)*2,0);
-    const stars = realSales>=70?5:realSales>=40?4:realSales>=20?3:realSales>=10?2:realSales>=1?1:0;
-    const badge = realSales>=500?"💎":realSales>=300?"🥈":realSales>=200?"🥉":realSales>=100?"🥉":"";
-    businessTable.innerHTML+=`
-    <tr>
-      <td>${b.name}</td>
-      <td>${realSales}</td>
-      <td>${"⭐".repeat(stars)}</td>
-      <td>${badge}</td>
-      <td>${b.clicks||0}</td>
-      <td>${b.status}</td>
-      <td>
-        ${b.status==="pending"?`<button class="approve" onclick="approve('${d.id}')">Approve</button>
-        <button class="reject" onclick="reject('${d.id}')">Reject</button>`:""}
-        <button class="delete" onclick="delBiz('${d.id}')">Delete</button>
-      </td>
-    </tr>`;
-  });
-});
+window.logout=()=>signOut(auth);
 
-window.approve=id=>updateDoc(doc(db,"businesses",id),{status:"approved"});
-window.reject=id=>updateDoc(doc(db,"businesses",id),{status:"rejected"});
-window.delBiz=async(id)=>{if(confirm("Delete this business?")) await deleteDoc(doc(db,"businesses",id));};
+window.load=async(type)=>{
+  content.innerHTML="Loading...";
 
-/* ===== APPLICATIONS ===== */
-onSnapshot(collection(db,"applications"), snap=>{
-  appTable.innerHTML = `<tr><th>User</th><th>Business ID</th><th>Status</th><th>Action</th></tr>`;
-  chatSelect.innerHTML='<option value="">Select Application</option>';
-  snap.forEach(d=>{
-    const a=d.data();
-    appTable.innerHTML+=`
-    <tr>
-      <td>${a.user}</td>
-      <td>${a.business}</td>
-      <td>${a.status}</td>
-      <td>
-        ${a.status==="PENDING"?`<button class="approve" onclick="approveApp('${d.id}')">Approve</button>
-        <button class="reject" onclick="rejectApp('${d.id}')">Reject</button>`:""}
-      </td>
-    </tr>`;
-    if(a.status==="APPROVED") chatSelect.innerHTML+=`<option value="${d.id}">${a.user}</option>`;
-  });
-});
+  if(type==="businesses"){
+    const snap=await getDocs(collection(db,"businesses"));
+    content.innerHTML="<h2>Businesses</h2>";
 
-window.approveApp=id=>updateDoc(doc(db,"applications",id),{status:"APPROVED"});
-window.rejectApp=id=>updateDoc(doc(db,"applications",id),{status:"REJECTED"});
-
-/* ===== PAYMENTS ===== */
-onSnapshot(collection(db,"payments"), snap=>{
-  payTable.innerHTML=`<tr><th>User</th><th>Business</th><th>Amount</th><th>Bank</th><th>Status</th></tr>`;
-  snap.forEach(d=>{
-    const p=d.data();
-    payTable.innerHTML+=`<tr>
-      <td>${p.user}</td>
-      <td>${p.business}</td>
-      <td>₦${p.amount}</td>
-      <td>${p.bank}</td>
-      <td>${p.status}</td>
-    </tr>`;
-  });
-});
-
-/* ===== ADS ===== */
-const ads=[{text:"Advertise Here",views:0}];
-setInterval(()=>{
-  adsTable.innerHTML=`<tr><th>Ad</th><th>Views (30s)</th></tr>`;
-  ads.forEach(a=>{
-    adsTable.innerHTML+=`<tr><td>${a.text}</td><td>${a.views}</td></tr>`;
-    a.views=0;
-  });
-},30000);
-
-/* ===== CHAT ===== */
-let currentChat="";
-chatSelect.onchange=()=>{
-  currentChat=chatSelect.value;
-  chatBox.innerHTML="";
-  if(!currentChat) return;
-  onSnapshot(collection(db,"chats",currentChat,"messages"), snap=>{
-    chatBox.innerHTML="";
     snap.forEach(d=>{
-      const m=d.data();
-      chatBox.innerHTML+=`<p><span class="${m.role}">${m.role}:</span> ${m.text}</p>`;
-      chatBox.scrollTop=chatBox.scrollHeight;
+      const b=d.data();
+      content.innerHTML+=`
+        <div class="card">
+          <div class="row">
+            <b>${b.name}</b>
+            <span class="small">${b.status}</span>
+          </div>
+          <br>
+          <div class="row">
+            <button class="action blue" onclick="promote('${d.id}')">Promote</button>
+            <button class="action red" onclick="removeBiz('${d.id}')">Delete</button>
+          </div>
+        </div>
+      `;
     });
-  });
+  }
+
+  if(type==="users"){
+    const snap=await getDocs(collection(db,"users"));
+    content.innerHTML="<h2>Users</h2>";
+
+    snap.forEach(d=>{
+      const u=d.data();
+      content.innerHTML+=`
+        <div class="card">
+          <b>${u.name || u.email}</b><br>
+          <div class="row">
+            <button class="action red" onclick="blockUser('${d.id}')">Block</button>
+            <button class="action blue" onclick="openDash('${d.id}')">Dashboard</button>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  if(type==="deals"){
+    const snap=await getDocs(collection(db,"successfulDeals"));
+    content.innerHTML="<h2>Successful Deals</h2>";
+
+    snap.forEach(d=>{
+      const s=d.data();
+      content.innerHTML+=`
+        <div class="card">
+          <b>Business:</b> ${s.businessId}<br>
+          <b>User:</b> ${s.userId}<br>
+          <b>Verified:</b> ${s.adminVerified}
+        </div>
+      `;
+    });
+  }
+
+  if(type==="ads"){
+    content.innerHTML=`
+      <h2>Ads</h2>
+      <p class="small">Manage ads in ads-manager.html</p>
+    `;
+  }
+
+  if(type==="analytics"){
+    content.innerHTML=`
+      <h2>Analytics</h2>
+      <p class="small">Detailed charts in analytics.html</p>
+    `;
+  }
 };
 
-window.sendChat=async()=>{
-  if(!currentChat||!chatMsg.value.trim()) return;
-  await addDoc(collection(db,"chats",currentChat,"messages"),{
-    role:"chat-admin",
-    text:chatMsg.value,
-    time:Date.now()
-  });
-  chatMsg.value="";
-};
+window.removeBiz=id=>deleteDoc(doc(db,"businesses",id));
+window.promote=id=>updateDoc(doc(db,"businesses",id),{boosted:true});
+window.blockUser=id=>updateDoc(doc(db,"users",id),{blocked:true});
+window.openDash=id=>alert("User dashboard coming next");
 </script>
 
 </body>
