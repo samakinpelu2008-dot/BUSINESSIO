@@ -61,6 +61,7 @@ footer{
 }
 footer p{margin:0;font-size:14px}
 .hidden{display:none}
+nav span{margin-left:auto;font-weight:600}
 </style>
 </head>
 
@@ -71,8 +72,9 @@ footer p{margin:0;font-size:14px}
   <p>Advertise • Sell • Hire • Discover Trusted Businesses</p>
   <nav>
     <button onclick="showSection('explore')">Explore</button>
-    <button onclick="showSection('add')">Add Business</button>
-    <button onclick="showSection('auth')">Login / Signup</button>
+    <button onclick="showSection('dashboard')">My Dashboard</button>
+    <button onclick="showSection('auth')" id="authBtn">Login / Signup</button>
+    <span id="userEmail" class="hidden"></span>
   </nav>
 </header>
 
@@ -95,16 +97,22 @@ footer p{margin:0;font-size:14px}
     <input id="password" type="password" placeholder="Password">
     <button class="primary" onclick="signup()">Sign Up</button>
     <button class="secondary" onclick="login()">Login</button>
+    <button class="secondary" onclick="logout()">Logout</button>
   </div>
 
-  <!-- ADD BUSINESS -->
-  <div id="add" class="card hidden">
-    <h3>Add Business / Product / Job</h3>
-    <input id="bizName" placeholder="Business name">
-    <textarea id="bizDesc" placeholder="Description"></textarea>
-    <input id="bizLink" placeholder="External link">
-    <input id="bizPrice" placeholder="Price ₦">
-    <button class="primary" onclick="addBusiness()">Publish</button>
+  <!-- DASHBOARD -->
+  <div id="dashboard" class="hidden">
+    <h3>My Dashboard</h3>
+    <p>Your businesses:</p>
+    <div id="myBusinesses" class="grid"></div>
+    <h4>Add a new business</h4>
+    <div class="card">
+      <input id="bizName" placeholder="Business name">
+      <textarea id="bizDesc" placeholder="Description"></textarea>
+      <input id="bizLink" placeholder="External link">
+      <input id="bizPrice" placeholder="Price ₦">
+      <button class="primary" onclick="addBusiness()">Publish</button>
+    </div>
   </div>
 
   <!-- EXPLORE -->
@@ -116,11 +124,10 @@ footer p{margin:0;font-size:14px}
   <p>© 2026 Businessio • Built for Africa & the world</p>
 </footer>
 
-<!-- FIREBASE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, onSnapshot, updateDoc, doc, increment } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, onSnapshot, updateDoc, doc, increment, query, where } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDeFlOeRoiNjqH9LAclnqnehXNY6scPqzE",
@@ -132,57 +139,131 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+// --- AUTH STATE ---
+let currentUser = null;
+onAuthStateChanged(auth,user=>{
+  currentUser = user;
+  if(user){
+    document.getElementById("authBtn").classList.add("hidden");
+    document.getElementById("userEmail").innerText = user.email;
+    document.getElementById("userEmail").classList.remove("hidden");
+  }else{
+    document.getElementById("authBtn").classList.remove("hidden");
+    document.getElementById("userEmail").classList.add("hidden");
+  }
+});
+
+// --- SIGNUP / LOGIN ---
 window.signup = async ()=>{
-  await createUserWithEmailAndPassword(auth,email.value,password.value);
-  alert("Signup successful");
+  try{
+    await createUserWithEmailAndPassword(auth,email.value,password.value);
+    alert("Signup successful");
+  }catch(e){alert(e.message);}
 }
 window.login = async ()=>{
-  await signInWithEmailAndPassword(auth,email.value,password.value);
-  alert("Login successful");
+  try{
+    await signInWithEmailAndPassword(auth,email.value,password.value);
+    alert("Login successful");
+  }catch(e){alert(e.message);}
+}
+window.logout = async ()=>{
+  await signOut(auth);
+  alert("Logged out");
+  showSection('explore');
 }
 
+// --- DASHBOARD / ADD BUSINESS ---
 window.addBusiness = async ()=>{
+  if(!currentUser){alert("Login first"); return;}
   await addDoc(collection(db,"businesses"),{
     name:bizName.value,
     desc:bizDesc.value,
     link:bizLink.value,
     price:Number(bizPrice.value),
-    sales:0,complaints:0,clicks:0
+    sales:0,
+    complaints:0,
+    clicks:0,
+    ownerId: currentUser.uid,
+    status:"pending"
   });
-  alert("Published");
+  alert("Business added (pending admin approval)");
+  bizName.value=""; bizDesc.value=""; bizLink.value=""; bizPrice.value="";
 }
 
-onSnapshot(collection(db,"businesses"), snap=>{
-  explore.innerHTML="";
+// --- DISPLAY MY BUSINESSES ---
+const myBizContainer = document.getElementById("myBusinesses");
+onSnapshot(collection(db,"businesses"),snap=>{
+  myBizContainer.innerHTML="";
   snap.forEach(d=>{
-    const b=d.data();
-    explore.innerHTML+=`
-    <div class="card">
-      <h3>${b.name}</h3>
-      <p>${b.desc}</p>
-      <p>₦${b.price}</p>
-      <button class="primary" onclick="visit('${d.id}','${b.link}')">Visit</button>
-    </div>`;
+    const b = d.data();
+    if(currentUser && b.ownerId===currentUser.uid){
+      const realSales = Math.max(b.sales-(b.complaints||0)*2,0);
+      const stars = realSales>=70?5:realSales>=40?4:realSales>=20?3:realSales>=10?2:realSales>=1?1:0;
+      const badge = realSales>=500?"💎":realSales>=300?"🥈":realSales>=200?"🥉":realSales>=100?"🥉":"";
+      const card = document.createElement("div");
+      card.className="card";
+      card.innerHTML=`<h4>${b.name}</h4>
+        <p>${b.desc}</p>
+        <p>₦${b.price}</p>
+        <p>Stars: ${"⭐".repeat(stars)} ${badge}</p>
+        <button class="primary" onclick="deleteBusiness('${d.id}')">Delete</button>`;
+      myBizContainer.appendChild(card);
+    }
   })
 });
 
-window.visit = async(id,link)=>{
+window.deleteBusiness = async (id)=>{
+  if(confirm("Delete this business?")){
+    await updateDoc(doc(db,"businesses",id),{status:"deleted"});
+  }
+}
+
+// --- PUBLIC EXPLORE ---
+const exploreContainer = document.getElementById("explore");
+onSnapshot(collection(db,"businesses"),snap=>{
+  exploreContainer.innerHTML="";
+  snap.forEach(d=>{
+    const b=d.data();
+    if(b.status==="approved"){
+      const card = document.createElement("div");
+      card.className="card";
+      const realSales = Math.max(b.sales-(b.complaints||0)*2,0);
+      const stars = realSales>=70?5:realSales>=40?4:realSales>=20?3:realSales>=10?2:realSales>=1?1:0;
+      const badge = realSales>=500?"💎":realSales>=300?"🥈":realSales>=200?"🥉":realSales>=100?"🥉":"";
+      card.innerHTML=`<h3>${b.name}</h3>
+        <p>${b.desc}</p>
+        <p>₦${b.price}</p>
+        <p>Stars: ${"⭐".repeat(stars)} ${badge}</p>
+        <button class="primary" onclick="visit('${d.id}','${b.link}')">Visit</button>`;
+      exploreContainer.appendChild(card);
+    }
+  })
+});
+
+window.visit = async (id,link)=>{
   await updateDoc(doc(db,"businesses",id),{clicks:increment(1)});
   window.open(link);
 }
 
+// --- NAVIGATION ---
 window.showSection = s=>{
-  ["auth","add","explore"].forEach(x=>document.getElementById(x).classList.add("hidden"));
+  ["auth","dashboard","explore"].forEach(x=>document.getElementById(x).classList.add("hidden"));
   document.getElementById(s).classList.remove("hidden");
 }
 
+// --- SEARCH / ADMIN ---
 window.search = ()=>{
   if(searchBox.value==="businessioadmin2026"){
-    const p=prompt("Password");
+    const p = prompt("Password");
     if(p==="Akinpepe100") location.href="admin.html";
   }
 }
+
+// --- ADS DEMO ---
+let adViews = 0;
+setInterval(()=>{adCounter.innerText = adViews; adViews=0;},30000);
+adBox.onclick=()=>{adViews++;};
 </script>
 
 </body>
-</html>
+        </html>
