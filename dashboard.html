@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Businessio • Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:#f5f7fb;
+}
+header{
+  background:#fff;
+  padding:15px 25px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  box-shadow:0 4px 20px rgba(0,0,0,.05);
+}
+header h2{margin:0;color:#1f4cff}
+.profile{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  cursor:pointer;
+}
+.profile img{
+  width:42px;
+  height:42px;
+  border-radius:50%;
+  object-fit:cover;
+  border:2px solid #1f4cff;
+}
+.container{
+  max-width:1200px;
+  margin:auto;
+  padding:25px;
+}
+.actions{
+  display:flex;
+  gap:15px;
+  margin-bottom:25px;
+  flex-wrap:wrap;
+}
+button{
+  padding:12px 16px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:600;
+}
+.primary{background:#1f4cff;color:#fff}
+.secondary{background:#eef2ff;color:#1f4cff}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:20px;
+}
+.card{
+  background:#fff;
+  padding:18px;
+  border-radius:14px;
+  box-shadow:0 8px 25px rgba(0,0,0,.05);
+}
+.badge{font-size:20px}
+small{color:#666}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h2>Businessio</h2>
+  <div class="profile" onclick="openProfile()">
+    <img id="avatar" src="https://via.placeholder.com/100">
+    <span id="username">Loading...</span>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="actions">
+    <button class="primary" onclick="goAdd()">➕ Add Business</button>
+    <button class="secondary" onclick="goExplore()">🌍 Explore</button>
+    <button class="secondary" onclick="logout()">Logout</button>
+  </div>
+
+  <h3>My Businesses</h3>
+  <div id="myBusinesses" class="grid"></div>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
+import { getFirestore, collection, query, where, onSnapshot, doc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDeFlOeRoiNjqH9LAclnqnehXNY6scPqzE",
+  authDomain: "businessio-37c69.firebaseapp.com",
+  projectId: "businessio-37c69"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let currentUser=null;
+
+/* AUTH CHECK */
+onAuthStateChanged(auth, async user=>{
+  if(!user){
+    location.href="login.html";
+    return;
+  }
+  currentUser=user;
+
+  const snap = await getDoc(doc(db,"users",user.uid));
+  if(snap.exists()){
+    const u=snap.data();
+    username.innerText=u.name;
+    if(u.photo) avatar.src=u.photo;
+  }
+
+  loadBusinesses();
+});
+
+/* LOAD USER BUSINESSES */
+function loadBusinesses(){
+  const q=query(collection(db,"businesses"),where("ownerId","==",currentUser.uid));
+  onSnapshot(q,snap=>{
+    myBusinesses.innerHTML="";
+    snap.forEach(d=>{
+      const b=d.data();
+      const realSales=Math.max((b.sales||0)-(b.complaints||0)*2,0);
+      const stars = realSales>=70?5:realSales>=40?4:realSales>=20?3:realSales>=10?2:realSales>=1?1:0;
+      const badge = realSales>=500?"💎":realSales>=300?"🥈":realSales>=200?"🥉":realSales>=100?"🥉":"";
+      const card=document.createElement("div");
+      card.className="card";
+      card.innerHTML=`
+        <h4>${b.name}</h4>
+        <p>${b.desc}</p>
+        <small>Status: <b>${b.status}</b></small><br><br>
+        <p>Rating: ${"⭐".repeat(stars)} <span class="badge">${badge}</span></p>
+        <button class="secondary" onclick="removeBiz('${d.id}')">Remove</button>
+      `;
+      myBusinesses.appendChild(card);
+    });
+  });
+}
+
+/* ACTIONS */
+window.goAdd=()=>location.href="add-business.html";
+window.goExplore=()=>location.href="explore.html";
+
+window.logout=async()=>{
+  await signOut(auth);
+  location.href="login.html";
+};
+
+window.openProfile=()=>{
+  location.href="login.html";
+};
+
+window.removeBiz=async(id)=>{
+  if(confirm("Remove this business?")){
+    await deleteDoc(doc(db,"businesses",id));
+  }
+};
+</script>
+
+</body>
+</html>
