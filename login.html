@@ -12,6 +12,12 @@ input{width:100%;padding:12px;margin-bottom:15px;border-radius:8px;border:1px so
 button{width:100%;padding:14px;border:none;border-radius:10px;background:#1f4cff;color:#fff;font-weight:700;cursor:pointer}
 button:hover{background:#1636d0}
 p{font-size:13px;text-align:center;color:#555}
+.toggle-password{position:relative;display:flex;align-items:center}
+.toggle-password input{flex:1}
+.toggle-password span{
+  position:absolute;right:15px;cursor:pointer;color:#555;
+  font-size:14px;user-select:none
+}
 </style>
 </head>
 
@@ -20,8 +26,11 @@ p{font-size:13px;text-align:center;color:#555}
 <div class="container">
   <h2>Login</h2>
   <input id="email" placeholder="Email" type="email">
-  <input id="password" placeholder="Password" type="password">
-  <button onclick="login()">Login</button>
+  <div class="toggle-password">
+    <input id="password" placeholder="Password" type="password">
+    <span id="togglePass">Show</span>
+  </div>
+  <button type="button" onclick="login()">Login</button>
   <p>Don't have an account? <a href="signup.html">Sign Up</a></p>
 </div>
 
@@ -40,9 +49,22 @@ const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
 
+// Toggle password visibility
+const togglePass = document.getElementById("togglePass");
+const passwordInput = document.getElementById("password");
+togglePass.addEventListener("click", ()=>{
+  if(passwordInput.type==="password"){
+    passwordInput.type="text";
+    togglePass.innerText="Hide";
+  }else{
+    passwordInput.type="password";
+    togglePass.innerText="Show";
+  }
+});
+
 async function login(){
   const emailVal=document.getElementById("email").value.trim();
-  const passwordVal=document.getElementById("password").value.trim();
+  const passwordVal=passwordInput.value.trim();
 
   if(!emailVal || !passwordVal){
     alert("Please fill all fields.");
@@ -58,7 +80,6 @@ async function login(){
       return;
     }
 
-    // Fetch user info
     const userDoc=await getDoc(doc(db,"users",user.uid));
     if(!userDoc.exists()){
       alert("User data not found.");
@@ -66,15 +87,11 @@ async function login(){
     }
 
     const userData=userDoc.data();
-
-    // Optional: Store user info locally
     localStorage.setItem("userData",JSON.stringify(userData));
 
-    // Redirect to user dashboard
     window.location.href="dashboard.html";
 
-    // Optional: Trigger login message email (requires Cloud Function)
-    // Example: call your Firebase Cloud Function here
+    // Optional: trigger login message email via Cloud Function
 
   }catch(error){
     alert("Login failed: "+error.message);
