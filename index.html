@@ -2,13 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Businessio • Login</title>
+<title>Businessio • Login/Signup</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <style>
 body{
   margin:0;
-  font-family:Arial, sans-serif;
+  font-family:Arial,sans-serif;
   background:linear-gradient(135deg,#1f4cff,#4f46e5);
   min-height:100vh;
   display:flex;
@@ -23,13 +22,14 @@ body{
   padding:25px;
   box-shadow:0 20px 40px rgba(0,0,0,.15);
 }
-h2{text-align:center;margin-top:0}
+h2{text-align:center;margin-top:0;color:#1f4cff}
 input,textarea{
   width:100%;
   padding:12px;
   margin-top:10px;
   border-radius:8px;
   border:1px solid #ddd;
+  font-size:14px;
 }
 button{
   width:100%;
@@ -46,51 +46,55 @@ button.secondary{
   background:#eef2ff;
   color:#1f4cff;
 }
-.profile{
-  text-align:center;
+.toggle-pass{
+  position:relative;
+  display:flex;
+  align-items:center;
 }
-.profile img{
-  width:80px;
-  height:80px;
-  border-radius:50%;
-  object-fit:cover;
-  border:3px solid #1f4cff;
+.toggle-pass span{
+  position:absolute;
+  right:12px;
+  cursor:pointer;
+  font-size:14px;
+  color:#666;
 }
-.hidden{display:none}
-small{color:#666}
+.message-box{
+  padding:10px;
+  margin-top:10px;
+  border-radius:8px;
+  display:none;
+  font-size:14px;
+}
+.message-box.error{background:#ffe6e6;color:#d8000c;}
+.message-box.success{background:#e6ffed;color:#006400;}
 </style>
 </head>
 
 <body>
-
 <div class="card">
 
-<!-- LOGIN / SIGNUP -->
+<h2>Businessio</h2>
+
 <div id="authBox">
-  <h2>Businessio</h2>
-  <input id="email" placeholder="Email">
-  <input id="password" type="password" placeholder="Password">
+  <input id="email" placeholder="Email" type="email">
+  <div class="toggle-pass">
+    <input id="password" type="password" placeholder="Password">
+    <span id="togglePass">Show</span>
+  </div>
   <input id="name" placeholder="Full Name (signup only)">
-  <textarea id="bio" placeholder="Short bio (signup only)"></textarea>
+  <textarea id="bio" placeholder="Short bio (optional)"></textarea>
+  
   <button onclick="signup()">Sign Up</button>
   <button class="secondary" onclick="login()">Login</button>
-</div>
-
-<!-- PROFILE -->
-<div id="profileBox" class="profile hidden">
-  <img id="avatar" src="https://via.placeholder.com/100">
-  <h3 id="pName"></h3>
-  <p id="pBio"></p>
-  <small id="pEmail"></small>
-  <button onclick="goDashboard()">Go to Dashboard</button>
-  <button class="secondary" onclick="logout()">Logout</button>
+  
+  <div id="msgBox" class="message-box"></div>
 </div>
 
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, sendEmailVerification } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -103,53 +107,81 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-/* AUTH STATE */
-onAuthStateChanged(auth, async (user)=>{
-  if(user){
-    const snap = await getDoc(doc(db,"users",user.uid));
-    if(snap.exists()){
-      const u = snap.data();
-      authBox.classList.add("hidden");
-      profileBox.classList.remove("hidden");
-      pName.innerText = u.name;
-      pBio.innerText = u.bio;
-      pEmail.innerText = user.email;
-      if(u.photo) avatar.src = u.photo;
-    }
-  }
+const emailInput = document.getElementById("email");
+const passwordInput = document.getElementById("password");
+const nameInput = document.getElementById("name");
+const bioInput = document.getElementById("bio");
+const msgBox = document.getElementById("msgBox");
+
+// Password toggle
+document.getElementById("togglePass").addEventListener("click", ()=>{
+  if(passwordInput.type==="password"){passwordInput.type="text";this.innerText="Hide";}
+  else{passwordInput.type="password";this.innerText="Show";}
 });
 
-/* SIGNUP */
+// Custom message
+function showMessage(text,type="error"){
+  msgBox.innerText = text;
+  msgBox.className = `message-box ${type}`;
+  msgBox.style.display="block";
+}
+
+// SIGNUP
 window.signup = async ()=>{
-  if(!email.value || !password.value || !name.value){
-    alert("Fill all required fields");
+  msgBox.style.display="none";
+  if(!emailInput.value || !passwordInput.value || !nameInput.value){
+    showMessage("Please fill all required fields");
     return;
   }
-  const cred = await createUserWithEmailAndPassword(auth,email.value,password.value);
-  await setDoc(doc(db,"users",cred.user.uid),{
-    name:name.value,
-    bio:bio.value || "",
-    photo:"",
-    created:Date.now()
-  });
+  try{
+    // Check if email already exists
+    const docRef = doc(db,"users",emailInput.value);
+    const docSnap = await getDoc(docRef);
+    if(docSnap.exists()){
+      showMessage("This email is already registered");
+      return;
+    }
+
+    const cred = await createUserWithEmailAndPassword(auth,emailInput.value,passwordInput.value);
+    await setDoc(doc(db,"users",cred.user.uid),{
+      name:nameInput.value,
+      bio:bioInput.value || "",
+      created:Date.now()
+    });
+    await sendEmailVerification(cred.user);
+    showMessage("Signup successful! Please verify your email before logging in.", "success");
+  }catch(err){
+    showMessage(err.message);
+  }
 };
 
-/* LOGIN */
+// LOGIN
 window.login = async ()=>{
-  await signInWithEmailAndPassword(auth,email.value,password.value);
+  msgBox.style.display="none";
+  if(!emailInput.value || !passwordInput.value){
+    showMessage("Please fill all required fields");
+    return;
+  }
+  try{
+    const cred = await signInWithEmailAndPassword(auth,emailInput.value,passwordInput.value);
+    if(!cred.user.emailVerified){
+      showMessage("Please verify your email before logging in");
+      await auth.signOut();
+      return;
+    }
+    // Success → redirect to dashboard
+    window.location.href="dashboard.html";
+  }catch(err){
+    showMessage(err.message);
+  }
 };
 
-/* LOGOUT */
-window.logout = async ()=>{
-  await signOut(auth);
-  location.reload();
-};
-
-/* DASHBOARD */
-window.goDashboard = ()=>{
-  location.href="dashboard.html";
-};
+// Auth state (optional: redirect if already logged in)
+onAuthStateChanged(auth,user=>{
+  if(user && user.emailVerified){
+    window.location.href="dashboard.html";
+  }
+});
 </script>
-
 </body>
 </html>
