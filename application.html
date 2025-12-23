@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Applications • Businessio</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{margin:0;font-family:Arial;background:#f4f6fb}
+header{
+  background:#1f4cff;color:#fff;padding:15px 25px;
+  display:flex;justify-content:space-between;align-items:center
+}
+.container{
+  max-width:1100px;margin:30px auto;padding:0 15px
+}
+.card{
+  background:#fff;padding:20px;border-radius:16px;
+  box-shadow:0 8px 25px rgba(0,0,0,.06);
+  margin-bottom:20px
+}
+.row{
+  display:flex;justify-content:space-between;
+  align-items:center;flex-wrap:wrap;gap:10px
+}
+.badge{
+  padding:5px 10px;border-radius:8px;
+  font-size:12px;font-weight:700
+}
+.pending{background:#fff3cd;color:#856404}
+.approved{background:#d4edda;color:#155724}
+.revoked{background:#f8d7da;color:#721c24}
+button{
+  padding:10px 14px;border:none;border-radius:10px;
+  cursor:pointer;font-weight:700
+}
+.approve{background:#1f4cff;color:#fff}
+.decline{background:#eee}
+.small{font-size:13px;color:#555}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h2>Applications</h2>
+  <button onclick="location.href='dashboard.html'">← Dashboard</button>
+</header>
+
+<div class="container" id="list">Loading...</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
+import {
+  getFirestore, collection, getDocs, query, where,
+  updateDoc, doc
+} from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+
+const firebaseConfig={
+  apiKey:"AIzaSyDeFlOeRoiNjqH9LAclnqnehXNY6scPqzE",
+  authDomain:"businessio-37c69.firebaseapp.com",
+  projectId:"businessio-37c69"
+};
+
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
+
+let user=null;
+
+onAuthStateChanged(auth,async u=>{
+  if(!u) location.href="login.html";
+  user=u;
+  load();
+});
+
+async function load(){
+  list.innerHTML="";
+
+  const snap=await getDocs(query(
+    collection(db,"applications"),
+    where("ownerId","==",user.uid)
+  ));
+
+  if(!snap.size){
+    list.innerHTML="<p>No applications yet</p>";
+    return;
+  }
+
+  snap.forEach(async d=>{
+    const appData=d.data();
+
+    const bizSnap=await getDocs(query(
+      collection(db,"businesses"),
+      where("__name__","==",appData.businessId)
+    ));
+
+    const biz=bizSnap.docs[0]?.data();
+
+    list.innerHTML+=`
+      <div class="card">
+        <div class="row">
+          <div>
+            <b>${biz?.name || "Business"}</b><br>
+            <span class="small">Applicant ID: ${appData.userId}</span>
+          </div>
+
+          <span class="badge ${appData.status}">
+            ${appData.status.toUpperCase()}
+          </span>
+        </div>
+
+        <br>
+
+        <div class="row">
+          <button class="approve" onclick="approve('${d.id}')">Approve</button>
+          <button class="decline" onclick="revoke('${d.id}')">Decline</button>
+          <button class="decline" onclick="openChat('${d.id}')">Chat</button>
+        </div>
+      </div>
+    `;
+  });
+}
+
+window.approve=async(id)=>{
+  await updateDoc(doc(db,"applications",id),{
+    status:"approved"
+  });
+  alert("Applicant approved");
+  load();
+};
+
+window.revoke=async(id)=>{
+  await updateDoc(doc(db,"applications",id),{
+    status:"revoked"
+  });
+  alert("Applicant declined and slot restored");
+  load();
+};
+
+window.openChat=id=>{
+  location.href=`chat.html?appId=${id}`;
+};
+</script>
+
+</body>
+</html>
