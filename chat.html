@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Chat • Businessio</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{margin:0;font-family:Arial;background:#f4f6fb}
+header{
+  background:#1f4cff;color:#fff;padding:15px 25px;
+  display:flex;justify-content:space-between;align-items:center
+}
+.chat-container{
+  max-width:900px;margin:20px auto;
+  background:#fff;border-radius:16px;
+  display:flex;flex-direction:column;
+  height:80vh;box-shadow:0 10px 30px rgba(0,0,0,.06)
+}
+.messages{
+  flex:1;padding:20px;overflow-y:auto
+}
+.msg{
+  margin-bottom:12px;max-width:70%;
+  padding:10px 14px;border-radius:12px;
+  font-size:14px
+}
+.me{background:#1f4cff;color:#fff;margin-left:auto}
+.other{background:#eee}
+.input-box{
+  display:flex;padding:15px;border-top:1px solid #eee
+}
+input{
+  flex:1;padding:12px;border-radius:10px;
+  border:1px solid #ccc
+}
+button{
+  padding:12px 16px;margin-left:10px;
+  border:none;border-radius:10px;
+  background:#1f4cff;color:#fff;
+  font-weight:700;cursor:pointer
+}
+.locked{
+  text-align:center;padding:40px;
+  color:#777;font-size:15px
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h2>Chat</h2>
+  <button onclick="history.back()">← Back</button>
+</header>
+
+<div class="chat-container">
+  <div id="messages" class="messages"></div>
+
+  <div id="inputArea" class="input-box">
+    <input id="text" placeholder="Type a message">
+    <button onclick="send()">Send</button>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
+import {
+  getFirestore, doc, getDoc, collection, addDoc,
+  query, where, orderBy, onSnapshot, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+
+const firebaseConfig={
+  apiKey:"AIzaSyDeFlOeRoiNjqH9LAclnqnehXNY6scPqzE",
+  authDomain:"businessio-37c69.firebaseapp.com",
+  projectId:"businessio-37c69"
+};
+
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
+
+const appId=new URLSearchParams(location.search).get("appId");
+let user=null,application=null;
+
+onAuthStateChanged(auth,async u=>{
+  if(!u) location.href="login.html";
+  user=u;
+  await loadApplication();
+});
+
+async function loadApplication(){
+  const snap=await getDoc(doc(db,"applications",appId));
+  if(!snap.exists()) return;
+
+  application=snap.data();
+
+  // lock chat unless approved
+  if(application.status!=="approved"){
+    messages.innerHTML="<div class='locked'>Chat locked until approval</div>";
+    inputArea.style.display="none";
+    return;
+  }
+
+  listenMessages();
+}
+
+function listenMessages(){
+  const q=query(
+    collection(db,"messages"),
+    where("appId","==",appId),
+    orderBy("created")
+  );
+
+  onSnapshot(q,snap=>{
+    messages.innerHTML="";
+    snap.forEach(d=>{
+      const m=d.data();
+      const div=document.createElement("div");
+      div.className="msg "+(m.senderId===user.uid?"me":"other");
+      div.textContent=m.text;
+      messages.appendChild(div);
+    });
+    messages.scrollTop=messages.scrollHeight;
+  });
+}
+
+window.send=async()=>{
+  if(!text.value.trim()) return;
+
+  await addDoc(collection(db,"messages"),{
+    appId:appId,
+    senderId:user.uid,
+    text:text.value,
+    created:serverTimestamp()
+  });
+
+  text.value="";
+};
+</script>
+
+</body>
+</html>
