@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Business Details • Businessio</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{margin:0;font-family:Arial;background:#f4f6fb}
+header{
+  background:#1f4cff;color:#fff;padding:15px 25px;
+  display:flex;justify-content:space-between;align-items:center
+}
+.container{
+  max-width:900px;margin:30px auto;background:#fff;
+  padding:25px;border-radius:18px;
+  box-shadow:0 10px 30px rgba(0,0,0,.06)
+}
+h2{color:#1f4cff;margin-top:0}
+.meta{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.badge{
+  display:inline-block;background:#eef2ff;color:#1f4cff;
+  padding:5px 10px;border-radius:8px;font-size:13px
+}
+button{
+  padding:14px 18px;border:none;border-radius:12px;
+  font-weight:700;cursor:pointer
+}
+.primary{background:#1f4cff;color:#fff}
+.secondary{background:#eee}
+.info{margin:10px 0;color:#555}
+.hidden{display:none}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h2>Business</h2>
+  <button onclick="location.href='explore.html'">← Back</button>
+</header>
+
+<div class="container">
+
+  <span class="badge" id="category"></span>
+  <h2 id="name"></h2>
+  <p class="info" id="desc"></p>
+
+  <div class="meta">
+    <div><b>Country:</b> <span id="country"></span></div>
+    <div><b>State:</b> <span id="state"></span></div>
+    <div><b>Location:</b> <span id="location"></span></div>
+    <div><b>Min Age:</b> <span id="age"></span></div>
+    <div><b>Time:</b> <span id="time"></span></div>
+    <div><b>Applicants:</b> <span id="count"></span></div>
+  </div>
+
+  <br>
+
+  <button id="applyBtn" class="primary" onclick="apply()">Apply</button>
+  <p id="msg" class="info"></p>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
+import {
+  getFirestore, doc, getDoc, updateDoc,
+  collection, addDoc, getDocs, query, where, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+
+const firebaseConfig={
+  apiKey:"AIzaSyDeFlOeRoiNjqH9LAclnqnehXNY6scPqzE",
+  authDomain:"businessio-37c69.firebaseapp.com",
+  projectId:"businessio-37c69"
+};
+
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
+
+const id=new URLSearchParams(location.search).get("id");
+let user=null,biz=null;
+
+onAuthStateChanged(auth,u=>{
+  user=u;
+  load();
+});
+
+async function load(){
+  const ref=doc(db,"businesses",id);
+  const snap=await getDoc(ref);
+  if(!snap.exists()) return;
+
+  biz=snap.data();
+
+  name.textContent=biz.name;
+  desc.textContent=biz.desc;
+  category.textContent=biz.category;
+  country.textContent=biz.country;
+  state.textContent=biz.state;
+  location.textContent=biz.location;
+  age.textContent=biz.age || "Any";
+  time.textContent=biz.time || "Any";
+
+  const apps=await getDocs(query(
+    collection(db,"applications"),
+    where("businessId","==",id)
+  ));
+  count.textContent=`${apps.size} / ${biz.maxApplicants || "∞"}`;
+
+  if(user && user.uid===biz.ownerId){
+    applyBtn.classList.add("hidden");
+    msg.textContent="You own this business";
+  }
+}
+
+window.apply=async()=>{
+  if(!user){
+    location.href="login.html";
+    return;
+  }
+
+  const appsRef=collection(db,"applications");
+  const existing=await getDocs(query(
+    appsRef,
+    where("businessId","==",id),
+    where("userId","==",user.uid)
+  ));
+  if(existing.size){
+    msg.textContent="You already applied";
+    return;
+  }
+
+  const all=await getDocs(query(appsRef,where("businessId","==",id)));
+  if(biz.maxApplicants && all.size>=biz.maxApplicants){
+    msg.textContent="Applications closed";
+    return;
+  }
+
+  await addDoc(appsRef,{
+    businessId:id,
+    userId:user.uid,
+    ownerId:biz.ownerId,
+    status:"pending",
+    created:serverTimestamp()
+  });
+
+  msg.textContent="Application sent. Wait for approval.";
+};
+</script>
+
+</body>
+</html>
