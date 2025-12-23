@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Businessio Admin Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+:root{
+  --primary:#ff6a00;
+  --dark:#0f172a;
+  --bg:#f5f7fb;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Inter,Arial;
+  background:var(--bg);
+  color:#111
+}
+header{
+  background:linear-gradient(135deg,#ff6a00,#f97316);
+  color:#fff;
+  padding:25px
+}
+header h1{margin:0;font-size:28px}
+.container{max-width:1300px;margin:auto;padding:20px}
+
+.card{
+  background:#fff;
+  border-radius:12px;
+  padding:18px;
+  margin-bottom:20px;
+  box-shadow:0 8px 25px rgba(0,0,0,.05)
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:14px
+}
+th,td{
+  padding:10px;
+  border-bottom:1px solid #eee;
+  text-align:left
+}
+th{
+  background:#f8fafc;
+  font-weight:600
+}
+
+button{
+  padding:8px 12px;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+  font-size:13px
+}
+.approve{background:#16a34a;color:#fff}
+.reject{background:#dc2626;color:#fff}
+.delete{background:#000;color:#fff}
+.send{background:var(--primary);color:#fff}
+
+.flex{display:flex;gap:10px;flex-wrap:wrap}
+select,input{
+  padding:8px;
+  border-radius:6px;
+  border:1px solid #ddd
+}
+
+#chatBox{
+  height:220px;
+  border:1px solid #ddd;
+  padding:10px;
+  overflow-y:auto;
+  margin-bottom:10px
+}
+.chat-admin{color:#16a34a;font-weight:600}
+.chat-user{color:#2563eb;font-weight:600}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>Businessio — Admin Dashboard</h1>
+  <p>Monitor • Approve • Control • Analyze</p>
+</header>
+
+<div class="container">
+
+<!-- PLATFORM STATS -->
+<div class="card">
+  <h3>Platform Statistics</h3>
+  <p>Registered Users: <b id="usersCount">0</b></p>
+</div>
+
+<!-- BUSINESSES -->
+<div class="card">
+  <h3>Businesses</h3>
+  <table id="businessTable">
+    <tr>
+      <th>Name</th>
+      <th>Sales</th>
+      <th>Stars</th>
+      <th>Badge</th>
+      <th>Clicks</th>
+      <th>Action</th>
+    </tr>
+  </table>
+</div>
+
+<!-- APPLICATIONS -->
+<div class="card">
+  <h3>Job / Business Applications</h3>
+  <table id="appTable">
+    <tr>
+      <th>User</th>
+      <th>Business ID</th>
+      <th>Status</th>
+      <th>Action</th>
+    </tr>
+  </table>
+</div>
+
+<!-- PAYMENTS -->
+<div class="card">
+  <h3>Payments</h3>
+  <table id="payTable">
+    <tr>
+      <th>User</th>
+      <th>Business</th>
+      <th>Amount</th>
+      <th>Bank</th>
+      <th>Status</th>
+    </tr>
+  </table>
+</div>
+
+<!-- ADS -->
+<div class="card">
+  <h3>Ads Analytics (30 Seconds)</h3>
+  <table id="adsTable">
+    <tr>
+      <th>Ad</th>
+      <th>Views (30s)</th>
+    </tr>
+  </table>
+</div>
+
+<!-- CHAT -->
+<div class="card">
+  <h3>Approved Chats</h3>
+  <select id="chatSelect">
+    <option value="">Select Application</option>
+  </select>
+
+  <div id="chatBox"></div>
+
+  <div class="flex">
+    <input id="chatMsg" placeholder="Type message">
+    <button class="send" onclick="sendChat()">Send</button>
+  </div>
+</div>
+
+</div>
+
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
+import {
+  getFirestore, collection, onSnapshot,
+  doc, updateDoc, deleteDoc, addDoc
+} from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDeFlOeRoiNjqH9LAclnqnehXNY6scPqzE",
+  authDomain: "businessio-37c69.firebaseapp.com",
+  projectId: "businessio-37c69"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+/* ===== USERS ===== */
+onSnapshot(collection(db,"users"), s=>{
+  usersCount.innerText = s.size;
+});
+
+/* ===== BUSINESSES ===== */
+onSnapshot(collection(db,"businesses"), snap=>{
+  businessTable.innerHTML = `
+  <tr>
+    <th>Name</th><th>Sales</th><th>Stars</th><th>Badge</th><th>Clicks</th><th>Action</th>
+  </tr>`;
+  snap.forEach(d=>{
+    const b=d.data();
+    const realSales=Math.max(b.sales-(b.complaints||0)*2,0);
+    const stars = realSales>=70?5:realSales>=40?4:realSales>=20?3:realSales>=10?2:realSales>=1?1:0;
+    const badge = realSales>=500?"💎":realSales>=300?"🥈":realSales>=200?"🥉":realSales>=100?"🥉":"";
+    businessTable.innerHTML+=`
+    <tr>
+      <td>${b.name}</td>
+      <td>${realSales}</td>
+      <td>${stars}</td>
+      <td>${badge}</td>
+      <td>${b.clicks||0}</td>
+      <td><button class="delete" onclick="delBiz('${d.id}')">Delete</button></td>
+    </tr>`;
+  });
+});
+
+window.delBiz = async(id)=>{
+  if(confirm("Delete this business?")){
+    await deleteDoc(doc(db,"businesses",id));
+  }
+};
+
+/* ===== APPLICATIONS ===== */
+onSnapshot(collection(db,"applications"), snap=>{
+  appTable.innerHTML = `
+  <tr>
+    <th>User</th><th>Business ID</th><th>Status</th><th>Action</th>
+  </tr>`;
+  chatSelect.innerHTML='<option value="">Select Application</option>';
+  snap.forEach(d=>{
+    const a=d.data();
+    appTable.innerHTML+=`
+    <tr>
+      <td>${a.user}</td>
+      <td>${a.business}</td>
+      <td>${a.status}</td>
+      <td>
+        <button class="approve" onclick="approve('${d.id}')">Approve</button>
+        <button class="reject" onclick="reject('${d.id}')">Reject</button>
+      </td>
+    </tr>`;
+    if(a.status==="APPROVED"){
+      chatSelect.innerHTML+=`<option value="${d.id}">${a.user}</option>`;
+    }
+  });
+});
+
+window.approve=id=>updateDoc(doc(db,"applications",id),{status:"APPROVED"});
+window.reject=id=>updateDoc(doc(db,"applications",id),{status:"REJECTED"});
+
+/* ===== PAYMENTS ===== */
+onSnapshot(collection(db,"payments"), snap=>{
+  payTable.innerHTML=`
+  <tr><th>User</th><th>Business</th><th>Amount</th><th>Bank</th><th>Status</th></tr>`;
+  snap.forEach(d=>{
+    const p=d.data();
+    payTable.innerHTML+=`
+    <tr>
+      <td>${p.user}</td>
+      <td>${p.business}</td>
+      <td>₦${p.amount}</td>
+      <td>${p.bank}</td>
+      <td>${p.status}</td>
+    </tr>`;
+  });
+});
+
+/* ===== ADS (LOCAL DEMO TRACKING) ===== */
+const ads=[{text:"Advertise Here",views:0}];
+setInterval(()=>{
+  adsTable.innerHTML=`<tr><th>Ad</th><th>Views (30s)</th></tr>`;
+  ads.forEach(a=>{
+    adsTable.innerHTML+=`<tr><td>${a.text}</td><td>${a.views}</td></tr>`;
+    a.views=0;
+  });
+},30000);
+
+/* ===== CHAT ===== */
+let currentChat="";
+chatSelect.onchange=()=>{
+  currentChat=chatSelect.value;
+  chatBox.innerHTML="";
+  if(!currentChat) return;
+  onSnapshot(collection(db,"chats",currentChat,"messages"), snap=>{
+    chatBox.innerHTML="";
+    snap.forEach(d=>{
+      const m=d.data();
+      chatBox.innerHTML+=`
+      <p><span class="${m.role}">${m.role}:</span> ${m.text}</p>`;
+      chatBox.scrollTop=chatBox.scrollHeight;
+    });
+  });
+};
+
+window.sendChat = async()=>{
+  if(!currentChat||!chatMsg.value.trim()) return;
+  await addDoc(collection(db,"chats",currentChat,"messages"),{
+    role:"chat-admin",
+    text:chatMsg.value,
+    time:Date.now()
+  });
+  chatMsg.value="";
+};
+</script>
+
+</body>
+</html>
