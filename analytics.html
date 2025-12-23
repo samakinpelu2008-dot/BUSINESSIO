@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Analytics • Businessio</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{margin:0;font-family:Arial;background:#f4f6fb}
+header{
+  background:#1f4cff;color:#fff;padding:15px 25px;
+  display:flex;justify-content:space-between;align-items:center
+}
+.container{
+  max-width:900px;margin:30px auto;padding:0 15px
+}
+.card{
+  background:#fff;padding:20px;border-radius:16px;
+  box-shadow:0 8px 25px rgba(0,0,0,.06);
+  margin-bottom:20px
+}
+.row{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.stat{font-weight:700;color:#1f4cff}
+.small{font-size:13px;color:#555}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h2>Analytics</h2>
+  <button onclick="location.href='admin-dashboard.html'">← Admin</button>
+</header>
+
+<div class="container" id="analytics">
+  Loading analytics...
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+import {
+  getFirestore, collection, getDocs, query, where, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+
+const firebaseConfig={
+  apiKey:"AIzaSyDeFlOeRoiNjqH9LAclnqnehXNY6scPqzE",
+  authDomain:"businessio-37c69.firebaseapp.com",
+  projectId:"businessio-37c69"
+};
+
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
+
+async function loadAnalytics(){
+  const today=new Date();
+  const msDay=24*60*60*1000;
+
+  const daUsers=await getDocs(query(collection(db,"userSessions"),
+    where("date",">=",new Date(today.getTime() - msDay))
+  ));
+
+  const weekAgo=new Date(today.getTime() - 7*msDay);
+  const weekUsers=await getDocs(query(collection(db,"userSessions"),
+    where("date",">=",weekAgo)
+  ));
+
+  let dailyTime=0, weeklyTime=0;
+  daUsers.forEach(d=>dailyTime+=d.data().sessionSeconds || 0);
+  weekUsers.forEach(d=>weeklyTime+=d.data().sessionSeconds || 0);
+
+  const avgWeeklyTime=(weekUsers.size>0)?Math.round(weeklyTime/weekUsers.size):0;
+
+  analytics.innerHTML=`
+    <div class="card">
+      <div class="row">
+        <div>Daily Active Users</div><div class="stat">${daUsers.size}</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <div>Weekly Active Users</div><div class="stat">${weekUsers.size}</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <div>Daily Total Session (seconds)</div><div class="stat">${dailyTime}</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <div>Weekly Total Session (seconds)</div><div class="stat">${weeklyTime}</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <div>Weekly Average Session Time (seconds)</div><div class="stat">${avgWeeklyTime}</div>
+      </div>
+    </div>
+
+    <div class="small">Data is stored for 4 weeks. Old data auto-clears.</div>
+  `;
+}
+
+loadAnalytics();
+</script>
+
+</body>
+</html>
