@@ -1,148 +1,305 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard • Businessio</title>
+<title>Businessio • Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-body{margin:0;font-family:Arial;background:#f4f6fb;}
-header{background:#1f4cff;color:#fff;padding:15px;text-align:center;font-size:20px;font-weight:bold}
-.container{padding:20px;max-width:900px;margin:auto}
-.profile{display:flex;align-items:center;margin-bottom:20px}
-.profile img{width:80px;height:80px;border-radius:50%;margin-right:15px;object-fit:cover;border:2px solid #1f4cff}
-.profile div{flex:1}
-h3{margin:5px 0;color:#1f4cff}
-.user-info{margin-bottom:25px}
-button{padding:8px 12px;border:none;border-radius:8px;background:#1f4cff;color:#fff;cursor:pointer;margin-right:10px}
-button:hover{background:#1636d0}
-.section{background:#fff;padding:15px;border-radius:12px;box-shadow:0 5px 15px rgba(0,0,0,.1);margin-bottom:20px}
-.section h4{margin-top:0;color:#1f4cff}
-.item{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #eee}
-.item:last-child{border-bottom:none}
-.nav{margin-bottom:20px}
-.nav a{margin-right:15px;color:#1f4cff;text-decoration:none;font-weight:bold}
-.nav a:hover{text-decoration:underline}
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#f5f5f5;
+}
+header{
+  background:#1f4cff;
+  color:#fff;
+  display:flex;
+  align-items:center;
+  padding:15px;
+  justify-content:space-between;
+  position:sticky;
+  top:0;
+  z-index:100;
+}
+header h2{margin:0;font-size:18px;}
+header .menu-btn{
+  font-size:24px;
+  cursor:pointer;
+}
+#sidebar{
+  position:fixed;
+  top:0;
+  left:-250px;
+  width:250px;
+  height:100%;
+  background:#fff;
+  box-shadow:2px 0 5px rgba(0,0,0,0.2);
+  padding-top:60px;
+  transition:0.3s;
+  z-index:99;
+}
+#sidebar.active{left:0;}
+#sidebar ul{list-style:none;padding:0;}
+#sidebar ul li{
+  padding:15px 20px;
+  border-bottom:1px solid #eee;
+  cursor:pointer;
+}
+#sidebar ul li:hover{background:#f0f0f0;}
+main{
+  margin-top:60px;
+  padding:20px;
+}
+.profile-card{
+  background:#fff;
+  padding:20px;
+  border-radius:12px;
+  box-shadow:0 5px 15px rgba(0,0,0,0.1);
+  display:flex;
+  align-items:center;
+  gap:15px;
+  margin-bottom:20px;
+}
+.profile-card img{
+  width:80px;
+  height:80px;
+  border-radius:50%;
+  object-fit:cover;
+  border:2px solid #1f4cff;
+  cursor:pointer;
+}
+.profile-card div h3{margin:0;font-size:18px;color:#1f4cff;}
+.profile-card div p{margin:5px 0 0 0;color:#555;font-size:14px;}
+.section-title{margin:15px 0 10px 0;font-size:16px;color:#1f4cff;}
+.card{
+  background:#fff;
+  padding:15px;
+  border-radius:12px;
+  box-shadow:0 5px 15px rgba(0,0,0,0.05);
+  margin-bottom:15px;
+}
+.card h4{margin:0;font-size:16px;color:#1f4cff;}
+.card p{margin:5px 0 0 0;font-size:14px;color:#555;}
+.card button{
+  margin-top:10px;
+  padding:8px 12px;
+  background:#1f4cff;
+  border:none;
+  border-radius:8px;
+  color:#fff;
+  cursor:pointer;
+}
+.logout-btn{
+  margin-top:10px;
+  background:#ff4d4d!important;
+}
+.hidden{display:none;}
 </style>
 </head>
-
 <body>
 
-<header>Businessio Dashboard</header>
+<header>
+  <span class="menu-btn" onclick="toggleSidebar()">☰</span>
+  <h2>Businessio Dashboard</h2>
+</header>
 
-<div class="container">
-  <div class="profile">
-    <img id="profilePic" src="https://via.placeholder.com/80" alt="Profile Picture">
-    <div>
-      <h3 id="userName">Loading...</h3>
-      <p id="userEmail"></p>
-      <p id="userAge"></p>
-    </div>
-  </div>
-
-  <div class="nav">
-    <a href="upload-business.html">Upload Business</a>
-    <a href="upload-job.html">Post Job</a>
-    <a href="logout.html">Logout</a>
-  </div>
-
-  <div class="section">
-    <h4>Your Businesses</h4>
-    <div id="businessList">Loading...</div>
-  </div>
-
-  <div class="section">
-    <h4>Your Jobs</h4>
-    <div id="jobList">Loading...</div>
-  </div>
+<div id="sidebar">
+  <ul>
+    <li onclick="showSection('profile')">Profile</li>
+    <li onclick="showSection('myBusinesses')">My Businesses</li>
+    <li onclick="showSection('applications')">Applications</li>
+    <li onclick="showSection('addBusiness')">Add Business</li>
+    <li id="adminSection" class="hidden" onclick="showSection('admin')">Admin Panel</li>
+    <li onclick="logout()">Logout</li>
+  </ul>
 </div>
+
+<main>
+  <!-- Profile -->
+  <div id="profile" class="hidden">
+    <div class="profile-card">
+      <img id="profilePic" src="https://via.placeholder.com/80" onclick="editProfile()">
+      <div>
+        <h3 id="pName">Name</h3>
+        <p id="pBio">Bio</p>
+        <p id="pEmail">Email</p>
+      </div>
+    </div>
+    <button onclick="editProfile()">Edit Profile</button>
+  </div>
+
+  <!-- My Businesses -->
+  <div id="myBusinesses" class="hidden">
+    <div class="section-title">My Businesses</div>
+    <div id="businessList"></div>
+  </div>
+
+  <!-- Applications -->
+  <div id="applications" class="hidden">
+    <div class="section-title">My Applications</div>
+    <div id="applicationList"></div>
+  </div>
+
+  <!-- Add Business -->
+  <div id="addBusiness" class="hidden">
+    <div class="section-title">Add New Business</div>
+    <input id="bName" placeholder="Business Name"><br><br>
+    <textarea id="bDesc" placeholder="Business Description"></textarea><br><br>
+    <input id="bLocation" placeholder="Location"><br><br>
+    <button onclick="addBusiness()">Add Business</button>
+    <div id="addMsg" class="message-box"></div>
+  </div>
+
+  <!-- Admin Panel -->
+  <div id="admin" class="hidden">
+    <div class="section-title">Admin Panel</div>
+    <p>Admin-only controls will go here...</p>
+  </div>
+</main>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
-import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
 
-const firebaseConfig={
-  apiKey:"AIzaSyDeFlOeRoiNjqH9LAclnqnehXNY6scPqzE",
-  authDomain:"businessio-37c69.firebaseapp.com",
-  projectId:"businessio-37c69"
+const firebaseConfig = {
+  apiKey: "AIzaSyDeFlOeRoiNjqH9LAclnqnehXNY6scPqzE",
+  authDomain: "businessio-37c69.firebaseapp.com",
+  projectId: "businessio-37c69"
 };
 
-const app=initializeApp(firebaseConfig);
-const auth=getAuth(app);
-const db=getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-const userName = document.getElementById("userName");
-const userEmail = document.getElementById("userEmail");
-const userAge = document.getElementById("userAge");
+const ADMIN_EMAIL = "stech3112025@gmail.com";
+
+// DOM Elements
+const sidebar = document.getElementById("sidebar");
+const profileDiv = document.getElementById("profile");
+const myBusinessesDiv = document.getElementById("myBusinesses");
+const applicationsDiv = document.getElementById("applications");
+const addBusinessDiv = document.getElementById("addBusiness");
+const adminDiv = document.getElementById("admin");
+const adminSection = document.getElementById("adminSection");
+
 const profilePic = document.getElementById("profilePic");
+const pName = document.getElementById("pName");
+const pBio = document.getElementById("pBio");
+const pEmail = document.getElementById("pEmail");
 
 const businessList = document.getElementById("businessList");
-const jobList = document.getElementById("jobList");
+const applicationList = document.getElementById("applicationList");
+const addMsg = document.getElementById("addMsg");
 
-// Check if user is logged in
-onAuthStateChanged(auth, async(user)=>{
-  if(!user){
-    window.location.href="login.html";
+// Sidebar toggle
+function toggleSidebar(){
+  sidebar.classList.toggle("active");
+}
+
+// Show section
+function showSection(section){
+  profileDiv.classList.add("hidden");
+  myBusinessesDiv.classList.add("hidden");
+  applicationsDiv.classList.add("hidden");
+  addBusinessDiv.classList.add("hidden");
+  adminDiv.classList.add("hidden");
+
+  if(section === "profile") profileDiv.classList.remove("hidden");
+  if(section === "myBusinesses") myBusinessesDiv.classList.remove("hidden");
+  if(section === "applications") applicationsDiv.classList.remove("hidden");
+  if(section === "addBusiness") addBusinessDiv.classList.remove("hidden");
+  if(section === "admin") adminDiv.classList.remove("hidden");
+}
+
+// Custom message
+function showMessage(el,msg,type="error"){
+  el.innerText = msg;
+  el.className = `message-box ${type}`;
+  el.style.display="block";
+  setTimeout(()=>el.style.display="none",4000);
+}
+
+// Edit profile (simple alert for now)
+function editProfile(){
+  alert("Profile edit page/modal will open here");
+}
+
+// Add business
+async function addBusiness(){
+  if(!bName.value || !bDesc.value || !bLocation.value){
+    showMessage(addMsg,"Fill all fields");
     return;
   }
+  const user = auth.currentUser;
+  try{
+    await addDoc(collection(db,"businesses"),{
+      name:bName.value,
+      description:bDesc.value,
+      location:bLocation.value,
+      owner:user.uid,
+      created:Date.now()
+    });
+    showMessage(addMsg,"Business added successfully","success");
+    bName.value=""; bDesc.value=""; bLocation.value="";
+    loadBusinesses();
+  }catch(err){
+    showMessage(addMsg,err.message);
+  }
+}
 
-  const uid = user.uid;
-
-  // Load user info from Firestore
-  const userDoc = await getDocs(query(collection(db,"users"),where("__name__","==",uid)));
-  if(!userDoc.empty){
-    const data = userDoc.docs[0].data();
-    userName.innerText = data.name;
-    userEmail.innerText = data.email;
-    userAge.innerText = "Age: "+data.age;
-    if(data.profilePic) profilePic.src = data.profilePic;
+// Load profile + businesses
+async function loadDashboard(user){
+  const snap = await getDoc(doc(db,"users",user.uid));
+  if(snap.exists()){
+    const u = snap.data();
+    pName.innerText = u.name || "No name";
+    pBio.innerText = u.bio || "No bio";
+    pEmail.innerText = user.email;
+    if(u.photo) profilePic.src = u.photo;
   }
 
-  // Load user businesses
-  const bizQuery = query(collection(db,"businesses"),where("ownerId","==",uid));
-  const bizSnap = await getDocs(bizQuery);
-  if(bizSnap.empty){
-    businessList.innerHTML = "<p>No businesses posted yet.</p>";
-  }else{
-    businessList.innerHTML = "";
-    bizSnap.forEach(doc=>{
-      const biz = doc.data();
-      businessList.innerHTML += `<div class="item">
-        <span>${biz.name}</span>
-        <span>
-          <button onclick="editBusiness('${doc.id}')">Edit</button>
-          <button onclick="deleteBusiness('${doc.id}')">Delete</button>
-        </span>
-      </div>`;
-    });
+  // Admin detection
+  if(user.email === ADMIN_EMAIL){
+    adminSection.classList.remove("hidden");
   }
 
-  // Load user jobs
-  const jobQuery = query(collection(db,"jobs"),where("ownerId","==",uid));
-  const jobSnap = await getDocs(jobQuery);
-  if(jobSnap.empty){
-    jobList.innerHTML = "<p>No jobs posted yet.</p>";
+  loadBusinesses();
+}
+
+// Load businesses
+async function loadBusinesses(){
+  businessList.innerHTML="";
+  const user = auth.currentUser;
+  const q = query(collection(db,"businesses"),where("owner","==",user.uid));
+  const querySnap = await getDocs(q);
+  if(querySnap.empty){
+    businessList.innerHTML="<p>No businesses yet</p>";
   }else{
-    jobList.innerHTML = "";
-    jobSnap.forEach(doc=>{
-      const job = doc.data();
-      jobList.innerHTML += `<div class="item">
-        <span>${job.title}</span>
-        <span>
-          <button onclick="editJob('${doc.id}')">Edit</button>
-          <button onclick="deleteJob('${doc.id}')">Delete</button>
-        </span>
-      </div>`;
+    querySnap.forEach(docSnap=>{
+      const b = docSnap.data();
+      const div = document.createElement("div");
+      div.className="card";
+      div.innerHTML=`<h4>${b.name}</h4><p>${b.description}</p><p><b>Location:</b> ${b.location}</p>`;
+      businessList.appendChild(div);
     });
+  }
+}
+
+// Logout
+function logout(){
+  signOut(auth).then(()=>window.location.href="index.html");
+}
+
+// Auth state
+onAuthStateChanged(auth,user=>{
+  if(!user){
+    window.location.href="index.html";
+  }else{
+    loadDashboard(user);
+    showSection("profile");
   }
 });
-
-// Placeholder functions for editing/deleting
-window.editBusiness = (id)=>{ alert("Edit business: "+id); }
-window.deleteBusiness = (id)=>{ alert("Delete business: "+id); }
-window.editJob = (id)=>{ alert("Edit job: "+id); }
-window.deleteJob = (id)=>{ alert("Delete job: "+id); }
 </script>
-
 </body>
-</html>
+  </html>
