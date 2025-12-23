@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Businessio — Discover & Advertise Businesses</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+:root{
+  --primary:#1f4cff;
+  --dark:#0f172a;
+  --bg:#f5f7fb;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Arial;background:var(--bg);color:#111}
+header{
+  background:linear-gradient(135deg,#1f4cff,#4f46e5);
+  color:#fff;padding:30px
+}
+header h1{margin:0;font-size:32px}
+nav{display:flex;gap:15px;margin-top:15px;flex-wrap:wrap}
+nav button{
+  background:#fff;color:#1f4cff;
+  border:none;padding:10px 16px;
+  border-radius:6px;font-weight:600;cursor:pointer
+}
+.container{max-width:1200px;margin:auto;padding:20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
+.card{
+  background:#fff;border-radius:12px;padding:18px;
+  box-shadow:0 8px 25px rgba(0,0,0,.05)
+}
+.card h3{margin-top:0}
+.badge{font-size:20px}
+.star{color:gold}
+button.primary{
+  background:var(--primary);color:#fff;border:none;
+  padding:10px 14px;border-radius:6px;cursor:pointer
+}
+button.secondary{
+  background:#eef2ff;color:#1f4cff;border:none;
+  padding:10px 14px;border-radius:6px;cursor:pointer
+}
+input,textarea,select{
+  width:100%;padding:10px;margin-top:8px;
+  border-radius:6px;border:1px solid #ddd
+}
+#adBox{
+  background:#000;color:#fff;height:140px;
+  border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  margin:20px 0;position:relative;cursor:pointer
+}
+#adCounter{
+  position:absolute;top:10px;right:12px;
+  background:rgba(0,0,0,.6);
+  padding:4px 8px;border-radius:6px;font-size:12px
+}
+footer{
+  background:#0f172a;color:#fff;padding:30px;margin-top:40px
+}
+footer p{margin:0;font-size:14px}
+.hidden{display:none}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>Businessio</h1>
+  <p>Advertise • Sell • Hire • Discover Trusted Businesses</p>
+  <nav>
+    <button onclick="showSection('explore')">Explore</button>
+    <button onclick="showSection('add')">Add Business</button>
+    <button onclick="showSection('auth')">Login / Signup</button>
+  </nav>
+</header>
+
+<div class="container">
+
+  <!-- SEARCH -->
+  <input id="searchBox" placeholder="Search businesses or type admin code">
+  <button class="primary" onclick="search()">Search</button>
+
+  <!-- ADS -->
+  <div id="adBox">
+    <span id="adText">Advertise on Businessio</span>
+    <span id="adCounter">0</span>
+  </div>
+
+  <!-- AUTH -->
+  <div id="auth" class="card hidden">
+    <h3>Login / Signup</h3>
+    <input id="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Password">
+    <button class="primary" onclick="signup()">Sign Up</button>
+    <button class="secondary" onclick="login()">Login</button>
+  </div>
+
+  <!-- ADD BUSINESS -->
+  <div id="add" class="card hidden">
+    <h3>Add Business / Product / Job</h3>
+    <input id="bizName" placeholder="Business name">
+    <textarea id="bizDesc" placeholder="Description"></textarea>
+    <input id="bizLink" placeholder="External link">
+    <input id="bizPrice" placeholder="Price ₦">
+    <button class="primary" onclick="addBusiness()">Publish</button>
+  </div>
+
+  <!-- EXPLORE -->
+  <div id="explore" class="grid"></div>
+
+</div>
+
+<footer>
+  <p>© 2026 Businessio • Built for Africa & the world</p>
+</footer>
+
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, onSnapshot, updateDoc, doc, increment } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDeFlOeRoiNjqH9LAclnqnehXNY6scPqzE",
+  authDomain: "businessio-37c69.firebaseapp.com",
+  projectId: "businessio-37c69"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+window.signup = async ()=>{
+  await createUserWithEmailAndPassword(auth,email.value,password.value);
+  alert("Signup successful");
+}
+window.login = async ()=>{
+  await signInWithEmailAndPassword(auth,email.value,password.value);
+  alert("Login successful");
+}
+
+window.addBusiness = async ()=>{
+  await addDoc(collection(db,"businesses"),{
+    name:bizName.value,
+    desc:bizDesc.value,
+    link:bizLink.value,
+    price:Number(bizPrice.value),
+    sales:0,complaints:0,clicks:0
+  });
+  alert("Published");
+}
+
+onSnapshot(collection(db,"businesses"), snap=>{
+  explore.innerHTML="";
+  snap.forEach(d=>{
+    const b=d.data();
+    explore.innerHTML+=`
+    <div class="card">
+      <h3>${b.name}</h3>
+      <p>${b.desc}</p>
+      <p>₦${b.price}</p>
+      <button class="primary" onclick="visit('${d.id}','${b.link}')">Visit</button>
+    </div>`;
+  })
+});
+
+window.visit = async(id,link)=>{
+  await updateDoc(doc(db,"businesses",id),{clicks:increment(1)});
+  window.open(link);
+}
+
+window.showSection = s=>{
+  ["auth","add","explore"].forEach(x=>document.getElementById(x).classList.add("hidden"));
+  document.getElementById(s).classList.remove("hidden");
+}
+
+window.search = ()=>{
+  if(searchBox.value==="businessioadmin2026"){
+    const p=prompt("Password");
+    if(p==="Akinpepe100") location.href="admin.html";
+  }
+}
+</script>
+
+</body>
+</html>
