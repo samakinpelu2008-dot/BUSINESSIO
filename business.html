@@ -1,153 +1,281 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Business Details • Businessio</title>
+<title>Businessio • My Businesses</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <style>
-body{margin:0;font-family:Arial;background:#f4f6fb}
-header{
-  background:#1f4cff;color:#fff;padding:15px 25px;
-  display:flex;justify-content:space-between;align-items:center
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#f4f6ff;
 }
-.container{
-  max-width:900px;margin:30px auto;background:#fff;
-  padding:25px;border-radius:18px;
-  box-shadow:0 10px 30px rgba(0,0,0,.06)
+
+/* HEADER */
+.header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:15px;
+  background:#1f4cff;
+  color:#fff;
+  position:sticky;
+  top:0;
+  z-index:100;
 }
-h2{color:#1f4cff;margin-top:0}
-.meta{display:grid;grid-template-columns:1fr 1fr;gap:15px}
-.badge{
-  display:inline-block;background:#eef2ff;color:#1f4cff;
-  padding:5px 10px;border-radius:8px;font-size:13px
+.menu-btn{
+  font-size:24px;
+  cursor:pointer;
 }
-button{
-  padding:14px 18px;border:none;border-radius:12px;
-  font-weight:700;cursor:pointer
+
+/* SIDE MENU */
+.side-menu{
+  position:fixed;
+  top:0;
+  left:-260px;
+  width:260px;
+  height:100%;
+  background:#fff;
+  box-shadow:2px 0 20px rgba(0,0,0,.2);
+  transition:.3s;
+  z-index:1001;
 }
-.primary{background:#1f4cff;color:#fff}
-.secondary{background:#eee}
-.info{margin:10px 0;color:#555}
-.hidden{display:none}
+.side-menu.active{left:0;}
+.side-menu h3{
+  margin:0;
+  padding:20px;
+  background:#1f4cff;
+  color:#fff;
+}
+.side-menu ul{
+  list-style:none;
+  padding:0;
+  margin:0;
+}
+.side-menu li{
+  padding:15px 20px;
+  border-bottom:1px solid #eee;
+  cursor:pointer;
+}
+.side-menu li:hover{
+  background:#f0f2ff;
+}
+
+/* OVERLAY */
+.overlay{
+  position:fixed;
+  top:0;left:0;
+  width:100%;height:100%;
+  background:rgba(0,0,0,.4);
+  display:none;
+  z-index:1000;
+}
+.overlay.show{display:block}
+
+/* CONTENT */
+.content{
+  padding:15px;
+}
+
+/* PROFILE CARD */
+.profile-card{
+  background:#fff;
+  border-radius:14px;
+  padding:15px;
+  display:flex;
+  align-items:center;
+  margin-bottom:20px;
+  box-shadow:0 10px 25px rgba(0,0,0,.1);
+}
+.profile-card img{
+  width:70px;
+  height:70px;
+  border-radius:50%;
+  object-fit:cover;
+  border:3px solid #1f4cff;
+}
+.profile-info{
+  margin-left:15px;
+}
+.profile-info h2{
+  margin:0;
+  font-size:20px;
+  font-weight:bold;
+}
+.profile-info small{
+  color:#666;
+}
+.edit-btn{
+  margin-left:auto;
+  background:#1f4cff;
+  color:#fff;
+  border:none;
+  padding:6px 12px;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+/* BUSINESS CARDS */
+.card{
+  background:#fff;
+  padding:15px;
+  border-radius:12px;
+  margin-bottom:15px;
+  box-shadow:0 8px 20px rgba(0,0,0,.08);
+}
+.card h3{
+  margin:0;
+}
+.card p{
+  margin:5px 0;
+}
+.card button{
+  padding:6px 10px;
+  margin-right:5px;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+}
+.edit-btn-card{background:#1f4cff;color:#fff;}
+.delete-btn-card{background:#ff4d4d;color:#fff;}
 </style>
 </head>
 
 <body>
 
-<header>
-  <h2>Business</h2>
-  <button onclick="location.href='explore.html'">← Back</button>
-</header>
+<!-- HEADER -->
+<div class="header">
+  <div class="menu-btn" onclick="toggleMenu()">☰</div>
+  <h3>My Businesses</h3>
+  <div></div>
+</div>
 
-<div class="container">
+<!-- SIDE MENU -->
+<div class="side-menu" id="menu">
+  <h3>Menu</h3>
+  <ul>
+    <li onclick="goPage('home')">🏠 Home</li>
+    <li onclick="goPage('my-businesses')">🏢 My Businesses</li>
+    <li onclick="goPage('chats')">💬 My Chats</li>
+    <li onclick="goPage('complaints')">📩 Complaints</li>
+    <li onclick="goPage('about')">ℹ About</li>
+    <li onclick="logout()">🚪 Logout</li>
+  </ul>
+</div>
 
-  <span class="badge" id="category"></span>
-  <h2 id="name"></h2>
-  <p class="info" id="desc"></p>
+<div class="overlay" id="overlay" onclick="toggleMenu()"></div>
 
-  <div class="meta">
-    <div><b>Country:</b> <span id="country"></span></div>
-    <div><b>State:</b> <span id="state"></span></div>
-    <div><b>Location:</b> <span id="location"></span></div>
-    <div><b>Min Age:</b> <span id="age"></span></div>
-    <div><b>Time:</b> <span id="time"></span></div>
-    <div><b>Applicants:</b> <span id="count"></span></div>
+<div class="content">
+
+  <!-- PROFILE CARD -->
+  <div class="profile-card">
+    <img id="avatar" src="https://cdn-icons-png.flaticon.com/512/847/847969.png">
+    <div class="profile-info">
+      <h2 id="userName">Loading...</h2>
+      <small id="userEmail"></small>
+    </div>
+    <button class="edit-btn" onclick="editProfile()">Edit</button>
   </div>
 
-  <br>
+  <!-- ADD BUSINESS BUTTON -->
+  <button style="margin-bottom:15px;padding:10px 15px;border:none;background:#1f4cff;color:#fff;border-radius:8px;cursor:pointer;" onclick="window.location.href='add-business.html'">+ Add New Business</button>
 
-  <button id="applyBtn" class="primary" onclick="apply()">Apply</button>
-  <p id="msg" class="info"></p>
+  <!-- USER BUSINESSES -->
+  <div id="myBusinesses">
+    <p>Loading your businesses...</p>
+  </div>
 
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
-import {
-  getFirestore, doc, getDoc, updateDoc,
-  collection, addDoc, getDocs, query, where, serverTimestamp
-} from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
+import { getFirestore, collection, getDocs, query, where, doc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
 
-const firebaseConfig={
-  apiKey:"AIzaSyDeFlOeRoiNjqH9LAclnqnehXNY6scPqzE",
-  authDomain:"businessio-37c69.firebaseapp.com",
-  projectId:"businessio-37c69"
+const firebaseConfig = {
+  apiKey: "AIzaSyDeFlOeRoiNjqH9LAclnqnehXNY6scPqzE",
+  authDomain: "businessio-37c69.firebaseapp.com",
+  projectId: "businessio-37c69"
 };
 
-const app=initializeApp(firebaseConfig);
-const auth=getAuth(app);
-const db=getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-const id=new URLSearchParams(location.search).get("id");
-let user=null,biz=null;
-
-onAuthStateChanged(auth,u=>{
-  user=u;
-  load();
+/* AUTH */
+onAuthStateChanged(auth, async user=>{
+  if(!user){location.href="index.html"; return;}
+  userEmail.innerText = user.email;
+  const snap = await getDoc(doc(db,"users",user.uid));
+  if(snap.exists()){
+    userName.innerText = snap.data().name;
+    if(snap.data().photo) avatar.src = snap.data().photo;
+  }
+  loadMyBusinesses(user.uid);
 });
 
-async function load(){
-  const ref=doc(db,"businesses",id);
-  const snap=await getDoc(ref);
-  if(!snap.exists()) return;
+/* LOAD USER BUSINESSES */
+async function loadMyBusinesses(uid){
+  const container = document.getElementById("myBusinesses");
+  container.innerHTML = "";
+  const q = query(collection(db,"businesses"), where("owner","==",uid));
+  const snaps = await getDocs(q);
+  if(snaps.empty){
+    container.innerHTML="<p>You haven't added any business yet.</p>";
+    return;
+  }
+  snaps.forEach(docSnap=>{
+    const data = docSnap.data();
+    const card = document.createElement("div");
+    card.classList.add("card");
+    card.innerHTML = `<h3>${data.name}</h3>
+                      <p>Type: ${data.type}</p>
+                      <p>Location: ${data.location}</p>
+                      <button class="edit-btn-card" onclick="editBusiness('${docSnap.id}')">Edit</button>
+                      <button class="delete-btn-card" onclick="deleteBusiness('${docSnap.id}')">Delete</button>`;
+    container.appendChild(card);
+  });
+}
 
-  biz=snap.data();
+/* EDIT BUSINESS */
+window.editBusiness = (id)=>{
+  alert("Redirect to edit page for business ID: "+id); // Implement actual edit page later
+};
 
-  name.textContent=biz.name;
-  desc.textContent=biz.desc;
-  category.textContent=biz.category;
-  country.textContent=biz.country;
-  state.textContent=biz.state;
-  location.textContent=biz.location;
-  age.textContent=biz.age || "Any";
-  time.textContent=biz.time || "Any";
-
-  const apps=await getDocs(query(
-    collection(db,"applications"),
-    where("businessId","==",id)
-  ));
-  count.textContent=`${apps.size} / ${biz.maxApplicants || "∞"}`;
-
-  if(user && user.uid===biz.ownerId){
-    applyBtn.classList.add("hidden");
-    msg.textContent="You own this business";
+/* DELETE BUSINESS */
+window.deleteBusiness = async (id)=>{
+  if(confirm("Are you sure you want to delete this business?")){
+    await deleteDoc(doc(db,"businesses",id));
+    alert("Deleted successfully");
+    location.reload();
   }
 }
 
-window.apply=async()=>{
-  if(!user){
-    location.href="login.html";
-    return;
+/* MENU */
+window.toggleMenu = ()=>{
+  menu.classList.toggle("active");
+  overlay.classList.toggle("show");
+};
+window.goPage = page=>{
+  switch(page){
+    case "home": window.location.href="home.html"; break;
+    case "my-businesses": window.location.href="my-businesses.html"; break;
+    case "chats": window.location.href="chats.html"; break;
+    case "complaints": window.location.href="complaints.html"; break;
+    case "about": window.location.href="about.html"; break;
   }
+  toggleMenu();
+};
 
-  const appsRef=collection(db,"applications");
-  const existing=await getDocs(query(
-    appsRef,
-    where("businessId","==",id),
-    where("userId","==",user.uid)
-  ));
-  if(existing.size){
-    msg.textContent="You already applied";
-    return;
-  }
+/* EDIT PROFILE */
+window.editProfile = ()=>{
+  alert("Profile editing modal here (to be implemented).");
+};
 
-  const all=await getDocs(query(appsRef,where("businessId","==",id)));
-  if(biz.maxApplicants && all.size>=biz.maxApplicants){
-    msg.textContent="Applications closed";
-    return;
-  }
-
-  await addDoc(appsRef,{
-    businessId:id,
-    userId:user.uid,
-    ownerId:biz.ownerId,
-    status:"pending",
-    created:serverTimestamp()
-  });
-
-  msg.textContent="Application sent. Wait for approval.";
+/* LOGOUT */
+window.logout = async ()=>{
+  await signOut(auth);
+  location.href="index.html";
 };
 </script>
 
