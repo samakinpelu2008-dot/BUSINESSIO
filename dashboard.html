@@ -10,29 +10,24 @@
 body{
   margin:0;
   font-family:Arial, sans-serif;
-  background:#f4f6fb;
+  background:#f5f7fb;
 }
-
-/* TOP BAR */
 .topbar{
-  height:55px;
   background:#1f4cff;
   color:#fff;
+  padding:12px 15px;
   display:flex;
   align-items:center;
-  padding:0 15px;
+  gap:12px;
 }
 .menu-btn{
   font-size:24px;
   cursor:pointer;
-  margin-right:15px;
 }
 .title{
+  font-weight:700;
   font-size:18px;
-  font-weight:bold;
 }
-
-/* SIDE MENU */
 .sidebar{
   position:fixed;
   top:0;
@@ -40,112 +35,136 @@ body{
   width:260px;
   height:100%;
   background:#fff;
-  box-shadow:2px 0 15px rgba(0,0,0,.1);
+  box-shadow:4px 0 20px rgba(0,0,0,.15);
+  padding:15px;
   transition:.3s;
-  z-index:1000;
+  z-index:10;
 }
 .sidebar.active{left:0}
-
-.profile-box{
-  background:#1f4cff;
-  color:#fff;
-  padding:20px;
-  text-align:center;
+.sidebar h3{margin-top:0}
+.sidebar a{
+  display:block;
+  padding:10px;
+  border-radius:8px;
+  color:#333;
+  text-decoration:none;
+  margin-bottom:6px;
 }
-.profile-box img{
+.sidebar a:hover{background:#eef2ff}
+.content{
+  padding:15px;
+}
+.card{
+  background:#fff;
+  border-radius:14px;
+  padding:15px;
+  margin-bottom:15px;
+  box-shadow:0 10px 30px rgba(0,0,0,.08);
+}
+.profile-card{
+  display:flex;
+  align-items:center;
+  gap:15px;
+}
+.profile-card img{
   width:70px;
   height:70px;
   border-radius:50%;
   object-fit:cover;
-  background:#fff;
+  border:3px solid #1f4cff;
 }
-.profile-box h3{
-  margin:10px 0 0;
-  font-size:16px;
+.grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
 }
-
-.nav a{
-  display:block;
-  padding:14px 18px;
-  text-decoration:none;
-  color:#333;
-  border-bottom:1px solid #eee;
-}
-.nav a:hover{background:#f4f6fb}
-
-/* CONTENT */
-.content{
-  padding:20px;
-}
-.card{
-  background:#fff;
-  border-radius:12px;
-  padding:18px;
-  margin-bottom:15px;
-  box-shadow:0 8px 20px rgba(0,0,0,.05);
-}
-.card h4{margin-top:0}
-
-/* OVERLAY */
-.overlay{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.4);
-  display:none;
-  z-index:900;
-}
-.overlay.show{display:block}
-
 button{
+  padding:12px;
+  border:none;
+  border-radius:10px;
   background:#1f4cff;
   color:#fff;
-  border:none;
-  padding:10px 14px;
-  border-radius:8px;
   cursor:pointer;
+  font-size:15px;
 }
+button.secondary{
+  background:#eef2ff;
+  color:#1f4cff;
+}
+.hidden{display:none}
 </style>
 </head>
 
 <body>
 
-<!-- SIDEBAR -->
-<div class="sidebar" id="sidebar">
-  <div class="profile-box">
-    <img id="userPhoto" src="https://cdn-icons-png.flaticon.com/512/149/149071.png">
-    <h3 id="userName">Loading...</h3>
-  </div>
-  <div class="nav">
-    <a href="dashboard.html">🏠 Home</a>
-    <a href="explore.html">🔍 Explore</a>
-    <a href="add-business.html">➕ Add Business</a>
-    <a href="application.html">📄 Applications</a>
-    <a href="chat.html">💬 Chats</a>
-    <a href="profile.html">👤 Profile</a>
-    <a href="#" onclick="logout()">🚪 Logout</a>
-  </div>
+<div class="topbar">
+  <div class="menu-btn" onclick="toggleMenu()">☰</div>
+  <div class="title">Businessio Dashboard</div>
 </div>
 
-<div class="overlay" id="overlay" onclick="closeMenu()"></div>
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+  <h3>Menu</h3>
+  <a href="index.html">🏠 Home</a>
+  <a href="explore.html">🔍 Explore</a>
+  <a href="add-business.html">➕ Add Business</a>
+  <a href="chat.html">💬 Chats</a>
+  <a href="application.html">📄 Applications</a>
+  <a href="profile.html">👤 Edit Profile</a>
 
-<!-- TOP BAR -->
-<div class="topbar">
-  <div class="menu-btn" onclick="openMenu()">☰</div>
-  <div class="title">Dashboard</div>
+  <div id="adminLinks" class="hidden">
+    <hr>
+    <a href="admin.html">🛠 Admin Panel</a>
+    <a href="ads-manager.html">📢 Ads Manager</a>
+    <a href="analytics.html">📊 Analytics</a>
+  </div>
+
+  <hr>
+  <a href="#" onclick="logout()">🚪 Logout</a>
 </div>
 
 <!-- CONTENT -->
 <div class="content">
-  <div class="card">
-    <h4>Welcome 👋</h4>
-    <p id="welcomeText">Loading your info...</p>
+
+  <!-- PROFILE -->
+  <div class="card profile-card">
+    <img id="userPhoto"
+      src="https://cdn-icons-png.flaticon.com/512/149/149071.png">
+    <div>
+      <div id="userName" style="font-size:22px;font-weight:800">Loading...</div>
+      <small id="userEmail"></small>
+    </div>
   </div>
 
-  <div class="card">
-    <h4>Your Activity</h4>
-    <p>Businesses created: <b>0</b></p>
-    <p>Applications sent: <b>0</b></p>
+  <!-- STATS -->
+  <div class="grid">
+    <div class="card">
+      <h4>🏢 Businesses</h4>
+      <b style="font-size:22px">0</b>
+    </div>
+    <div class="card">
+      <h4>📄 Applications</h4>
+      <b style="font-size:22px">0</b>
+    </div>
+    <div class="card">
+      <h4>💬 Chats</h4>
+      <b style="font-size:22px">0</b>
+    </div>
+    <div class="card">
+      <h4>📢 Ads</h4>
+      <b style="font-size:22px">0</b>
+    </div>
   </div>
+
+  <!-- ACTIONS -->
+  <div class="card">
+    <h4>Quick Actions</h4>
+    <div class="grid">
+      <button onclick="location.href='add-business.html'">Add Business</button>
+      <button onclick="location.href='explore.html'" class="secondary">Explore</button>
+    </div>
+  </div>
+
 </div>
 
 <script type="module">
@@ -159,40 +178,40 @@ const firebaseConfig = {
   projectId: "businessio-37c69"
 };
 
+const ADMIN_EMAIL = "stech3112025@gmail.com";
+
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-/* MENU */
-window.openMenu = ()=>{
-  sidebar.classList.add("active");
-  overlay.classList.add("show");
-};
-window.closeMenu = ()=>{
-  sidebar.classList.remove("active");
-  overlay.classList.remove("show");
-};
-
-/* AUTH */
 onAuthStateChanged(auth, async (user)=>{
   if(!user){
     location.href="index.html";
     return;
   }
+
+  userEmail.innerText = user.email;
+
+  if(user.email === ADMIN_EMAIL){
+    adminLinks.classList.remove("hidden");
+  }
+
   const snap = await getDoc(doc(db,"users",user.uid));
   if(snap.exists()){
     const u = snap.data();
     userName.innerText = u.name || "User";
-    welcomeText.innerText = `Welcome back, ${u.name || "User"} 🎉`;
     if(u.photo) userPhoto.src = u.photo;
   }
 });
 
-/* LOGOUT */
 window.logout = async ()=>{
   await signOut(auth);
   location.href="index.html";
-};
+}
+
+window.toggleMenu = ()=>{
+  sidebar.classList.toggle("active");
+}
 </script>
 
 </body>
