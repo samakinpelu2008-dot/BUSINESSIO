@@ -4,212 +4,106 @@
 <meta charset="UTF-8">
 <title>Businessio • Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <style>
-*{box-sizing:border-box}
-body{
-  margin:0;
-  font-family:Arial, sans-serif;
-  background:#f4f6ff;
-}
-
-/* HEADER */
-.header{
-  display:flex;
-  align-items:center;
-  padding:15px;
-  background:#1f4cff;
-  color:#fff;
-}
-.menu-btn{
-  font-size:24px;
-  cursor:pointer;
-  margin-right:15px;
-}
-
-/* SIDE MENU */
-.side-menu{
-  position:fixed;
-  top:0;
-  left:-260px;
-  width:260px;
-  height:100%;
-  background:#fff;
-  box-shadow:2px 0 20px rgba(0,0,0,.2);
-  transition:.3s;
-  z-index:1001;
-}
-.side-menu.active{left:0}
-.side-menu h3{
-  margin:0;
-  padding:20px;
-  background:#1f4cff;
-  color:#fff;
-}
-.side-menu ul{
-  list-style:none;
-  padding:0;
-  margin:0;
-}
-.side-menu li{
-  padding:15px 20px;
-  border-bottom:1px solid #eee;
-  cursor:pointer;
-}
-.side-menu li:hover{
-  background:#f0f2ff;
-}
-
-/* OVERLAY */
-.overlay{
-  position:fixed;
-  top:0;left:0;
-  width:100%;height:100%;
-  background:rgba(0,0,0,.4);
-  display:none;
-  z-index:1000;
-}
-.overlay.show{display:block}
-
-/* CONTENT */
-.content{
-  padding:15px;
-}
-
-/* PROFILE CARD */
-.profile-card{
-  background:#fff;
-  border-radius:14px;
-  padding:15px;
-  display:flex;
-  align-items:center;
-  position:relative;
-  box-shadow:0 10px 25px rgba(0,0,0,.1);
-}
-.profile-card img{
-  width:70px;
-  height:70px;
-  border-radius:50%;
-  object-fit:cover;
-  border:3px solid #1f4cff;
-}
-.profile-info{
-  margin-left:15px;
-}
-.profile-info h2{
-  margin:0;
-  font-size:20px;
-  font-weight:bold;
-}
-.profile-info small{
-  color:#666;
-}
-.edit-btn{
-  position:absolute;
-  right:15px;
-  bottom:15px;
-  background:#1f4cff;
-  color:#fff;
-  border:none;
-  padding:6px 12px;
-  border-radius:6px;
-  cursor:pointer;
-}
-
-/* SECTIONS */
-.section{
-  display:none;
-  margin-top:20px;
-}
-.section.active{display:block}
-
-/* CARDS */
-.card{
-  background:#fff;
-  padding:15px;
-  border-radius:12px;
-  margin-bottom:15px;
-  box-shadow:0 8px 20px rgba(0,0,0,.08);
-}
+body{margin:0;font-family:Arial,sans-serif;background:#f4f6ff;}
+header{display:flex;align-items:center;justify-content:space-between;background:#1f4cff;color:#fff;padding:12px;}
+.menu-btn{font-size:24px;cursor:pointer;}
+.side-menu{position:fixed;top:0;left:-250px;width:250px;height:100%;background:#fff;box-shadow:2px 0 12px rgba(0,0,0,.2);padding:20px;transition:0.3s;z-index:1000;}
+.side-menu.open{left:0;}
+.side-menu h3{margin-top:0;}
+.side-menu a{display:block;padding:12px 0;color:#1f4cff;text-decoration:none;font-weight:bold;}
+.side-menu a:hover{background:#eef2ff;border-radius:8px;}
+.user-card{display:flex;align-items:center;background:#fff;padding:15px;margin:15px;border-radius:12px;box-shadow:0 5px 15px rgba(0,0,0,.1);position:relative;}
+.user-card img{width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid #1f4cff;}
+.user-card .info{margin-left:15px;flex:1;}
+.user-card .info h2{margin:0;font-size:20px;font-weight:bold;}
+.user-card .info p{margin:2px 0;color:#555;font-size:14px;}
+.edit-btn{position:absolute;bottom:10px;right:10px;padding:6px 12px;background:#1f4cff;color:#fff;border:none;border-radius:8px;cursor:pointer;}
+.quick-actions{display:flex;flex-wrap:wrap;justify-content:center;margin:15px;}
+.quick-actions .card{background:#fff;padding:20px;margin:10px;border-radius:12px;box-shadow:0 5px 15px rgba(0,0,0,.1);cursor:pointer;text-align:center;width:150px;transition:0.2s;}
+.quick-actions .card:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,.2);}
+.quick-actions .card h3{margin:10px 0 0;color:#1f4cff;font-size:16px;}
+section{padding:15px;max-width:800px;margin:auto;}
+.card{background:#fff;padding:20px;margin-top:15px;border-radius:12px;box-shadow:0 5px 15px rgba(0,0,0,.1);}
+textarea{width:100%;padding:10px;border-radius:8px;border:1px solid #ccc;}
+button.send-btn{margin-top:10px;padding:12px;width:100%;border:none;border-radius:8px;background:#1f4cff;color:#fff;font-size:16px;cursor:pointer;}
 </style>
 </head>
-
 <body>
 
-<!-- HEADER -->
-<div class="header">
-  <div class="menu-btn" onclick="toggleMenu()">☰</div>
-  <h3>Dashboard</h3>
-</div>
+<header>
+  <span class="menu-btn" onclick="toggleMenu()">☰</span>
+  <h1>Dashboard</h1>
+</header>
 
-<!-- SIDE MENU -->
-<div class="side-menu" id="menu">
+<div class="side-menu" id="sideMenu">
   <h3>Menu</h3>
-  <ul>
-    <li onclick="showSection('home')">🏠 Home</li>
-    <li onclick="showSection('business')">🏢 My Businesses</li>
-    <li onclick="showSection('chats')">💬 My Chats</li>
-    <li onclick="showSection('complaints')">📩 Complaints</li>
-    <li onclick="showSection('about')">ℹ About</li>
-    <li onclick="logout()">🚪 Logout</li>
-  </ul>
+  <a href="#" onclick="scrollToSection('myBusinesses')">My Businesses</a>
+  <a href="#" onclick="scrollToSection('myChats')">My Chats</a>
+  <a href="#" onclick="scrollToSection('complaintsSection')">Complaints/Suggestions</a>
+  <a href="#" onclick="scrollToSection('aboutSection')">About</a>
+  <a href="#" onclick="logout()">Logout</a>
 </div>
 
-<div class="overlay" id="overlay" onclick="toggleMenu()"></div>
-
-<!-- CONTENT -->
-<div class="content">
-
-  <!-- PROFILE -->
-  <div class="profile-card">
+<!-- PROFILE CARD -->
+<section>
+  <div class="user-card">
     <img id="avatar" src="https://cdn-icons-png.flaticon.com/512/847/847969.png">
-    <div class="profile-info">
+    <div class="info">
       <h2 id="userName">Loading...</h2>
-      <small id="userEmail"></small>
+      <p id="userEmail"></p>
+      <p id="joinedDate"></p>
     </div>
-    <button class="edit-btn">Edit</button>
+    <button class="edit-btn" onclick="editProfile()">Edit</button>
   </div>
 
-  <!-- HOME -->
-  <div class="section active" id="home">
-    <div class="card">Welcome to Businessio 🎉</div>
-    <div class="card">Ads • Businesses • Updates</div>
-  </div>
-
-  <!-- BUSINESS -->
-  <div class="section" id="business">
-    <div class="card">Your Businesses will appear here</div>
-  </div>
-
-  <!-- CHATS -->
-  <div class="section" id="chats">
-    <div class="card">Your Chats hallway (WhatsApp‑style)</div>
-  </div>
-
-  <!-- COMPLAINTS -->
-  <div class="section" id="complaints">
-    <div class="card">
-      <h3>Send Complaint</h3>
-      <textarea placeholder="Write here..." style="width:100%;padding:10px"></textarea>
-      <button style="margin-top:10px">Send</button>
+  <!-- QUICK ACTIONS -->
+  <div class="quick-actions">
+    <div class="card" onclick="location.href='add-business.html'">
+      <h3>Add Business</h3>
     </div>
+    <div class="card" onclick="scrollToSection('myBusinesses')">
+      <h3>My Businesses</h3>
+    </div>
+    <div class="card" onclick="scrollToSection('myChats')">
+      <h3>My Chats</h3>
+    </div>
+  </div>
+
+  <!-- MY BUSINESSES -->
+  <div class="card" id="myBusinesses">
+    <h2>My Businesses</h2>
+    <p>List of your businesses will appear here...</p>
+  </div>
+
+  <!-- MY CHATS -->
+  <div class="card" id="myChats">
+    <h2>My Chats</h2>
+    <p>Your chat threads will appear here...</p>
+  </div>
+
+  <!-- COMPLAINTS/SUGGESTIONS -->
+  <div class="card" id="complaintsSection">
+    <h2>Complaints / Suggestions</h2>
+    <textarea id="complaintText" rows="4" placeholder="Write your complaint or suggestion here..."></textarea>
+    <button class="send-btn" onclick="sendComplaint()">Send</button>
+    <small id="complaintStatus" style="color:green;"></small>
   </div>
 
   <!-- ABOUT -->
-  <div class="section" id="about">
-    <div class="card">
-      <h3>About Businessio</h3>
-      <p>Launched: 2025</p>
-      <p>Created by S.TECH</p>
-    </div>
+  <div class="card" id="aboutSection">
+    <h2>About Businessio</h2>
+    <p><strong>Description:</strong> Businessio is a platform designed to allow users to view, interact, and engage with businesses both inside and outside Nigeria.</p>
+    <p><strong>How to operate:</strong> After logging in, users can explore all businesses and ads. By clicking "Buy" or "Apply", a chat opens automatically for negotiation. Users can also view their dashboard, manage profile, and track interactions. Businesses can manage listings via "Add Business".</p>
+    <p><strong>Creation:</strong> Businessio was developed to simplify business interactions, providing real-time communication, rating systems, and ad tracking.</p>
+    <p><strong>Company:</strong> Created by S.Tech, a tech company committed to digital solutions for individuals and businesses.</p>
   </div>
-
-</div>
+</section>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, updateDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDeFlOeRoiNjqH9LAclnqnehXNY6scPqzE",
@@ -221,31 +115,73 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-onAuthStateChanged(auth, async user=>{
-  if(!user){location.href="index.html"; return;}
-  userEmail.innerText = user.email;
-  const snap = await getDoc(doc(db,"users",user.uid));
-  if(snap.exists()){
-    userName.innerText = snap.data().name;
-  }
+let currentUser = null;
+onAuthStateChanged(auth,user=>{
+  if(!user) location.href="index.html";
+  currentUser = user;
+  loadUserInfo();
 });
 
-window.toggleMenu = ()=>{
-  menu.classList.toggle("active");
-  overlay.classList.toggle("show");
-};
+async function loadUserInfo(){
+  const snap = await getDoc(doc(db,"users",currentUser.uid));
+  if(snap.exists()){
+    const u = snap.data();
+    document.getElementById("userName").innerText = u.name || "User";
+    document.getElementById("userEmail").innerText = currentUser.email;
+    document.getElementById("joinedDate").innerText = "Joined: "+new Date(u.created).toLocaleDateString();
+    if(u.photo) document.getElementById("avatar").src = u.photo;
+  }
+}
 
-window.showSection = id=>{
-  document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
-  toggleMenu();
-};
+function toggleMenu(){
+  const menu = document.getElementById("sideMenu");
+  menu.classList.toggle("open");
+}
 
 window.logout = async ()=>{
   await signOut(auth);
   location.href="index.html";
-};
+}
+
+function editProfile(){
+  const newName = prompt("Enter new name:", document.getElementById("userName").innerText);
+  if(newName){
+    updateDoc(doc(db,"users",currentUser.uid),{ name:newName });
+    document.getElementById("userName").innerText = newName;
+  }
+}
+
+function scrollToSection(sectionId){
+  const section = document.getElementById(sectionId);
+  if(section){
+    section.scrollIntoView({behavior:"smooth"});
+    toggleMenu(); // close menu after clicking
+  }
+}
+
+async function sendComplaint() {
+  const text = document.getElementById("complaintText").value.trim();
+  const status = document.getElementById("complaintStatus");
+  if (!text) {
+    alert("Please write something first.");
+    return;
+  }
+  try {
+    await addDoc(collection(db,"complaints"),{
+      userId: currentUser.uid,
+      text: text,
+      created: Date.now(),
+      userEmail: currentUser.email
+    });
+    status.innerText = "Complaint/suggestion sent successfully!";
+    document.getElementById("complaintText").value = "";
+    setTimeout(()=>status.innerText="",3000);
+  } catch(err){
+    console.error(err);
+    alert("Error sending complaint. Check console.");
+  }
+}
 </script>
 
 </body>
-</html>
+  </html>
