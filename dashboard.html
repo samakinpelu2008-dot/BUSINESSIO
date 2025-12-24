@@ -1,181 +1,271 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Dashboard</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <title>Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<style>
-*{box-sizing:border-box}
-body{
-  margin:0;
-  font-family:Arial, sans-serif;
-  background:#f4f6fb;
-}
+  <!-- Icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 
-/* TOP BAR */
-.topbar{
-  background:#1f4cff;
-  color:#fff;
-  padding:14px 16px;
-  display:flex;
-  align-items:center;
-  gap:16px;
-}
-.menu-btn{font-size:22px;cursor:pointer}
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", sans-serif;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      min-height: 100vh;
+      color: #333;
+    }
 
-/* MENU */
-.menu{
-  position:fixed;
-  top:0;left:-260px;
-  width:260px;height:100%;
-  background:#fff;
-  box-shadow:4px 0 20px rgba(0,0,0,.15);
-  padding:20px;
-  transition:.3s;
-  z-index:10;
-}
-.menu a{
-  display:block;
-  padding:14px;
-  text-decoration:none;
-  color:#000;
-  border-radius:10px;
-}
-.menu a:hover{background:#f1f3ff}
+    /* ===== MENU BAR ===== */
+    .navbar {
+      background: #fff;
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
 
-/* OVERLAY */
-.overlay{
-  position:fixed;
-  top:0;left:0;
-  width:100%;height:100%;
-  background:rgba(0,0,0,.3);
-  display:none;
-  z-index:9;
-}
+    .logo {
+      font-weight: 700;
+      font-size: 20px;
+      color: #2a5298;
+    }
 
-/* PROFILE CARD */
-.profile{
-  background:#fff;
-  margin:16px;
-  padding:16px;
-  border-radius:16px;
-  display:flex;
-  gap:14px;
-  align-items:center;
-  box-shadow:0 10px 25px rgba(0,0,0,.08);
-}
-.profile img{
-  width:60px;height:60px;
-  border-radius:50%;
-  background:#ddd;
-}
-.profile b{font-size:18px}
+    .nav-links a {
+      margin-left: 18px;
+      text-decoration: none;
+      color: #333;
+      font-weight: 500;
+    }
 
-/* CONTENT */
-.section{display:none;padding:16px}
-.section.active{display:block}
+    .nav-links a:hover {
+      color: #2a5298;
+    }
 
-/* CARD */
-.card{
-  background:#fff;
-  border-radius:16px;
-  padding:16px;
-  margin-bottom:16px;
-  box-shadow:0 8px 20px rgba(0,0,0,.08);
-}
+    .logout {
+      color: red;
+      font-weight: 600;
+      cursor: pointer;
+    }
 
-textarea,input,button{
-  width:100%;
-  padding:14px;
-  margin-top:10px;
-  border-radius:12px;
-  border:1px solid #ddd;
-}
-button{
-  background:#1f4cff;
-  color:#fff;
-  border:none;
-}
-</style>
+    /* ===== MAIN ===== */
+    .container {
+      padding: 20px;
+      max-width: 1100px;
+      margin: auto;
+    }
+
+    /* ===== PROFILE CARD ===== */
+    .profile-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+      margin-bottom: 25px;
+    }
+
+    .profile-img {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #2a5298;
+      cursor: pointer;
+    }
+
+    .profile-name {
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .profile-sub {
+      color: #666;
+      font-size: 14px;
+    }
+
+    /* ===== DASHBOARD CARDS ===== */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+      transition: transform 0.2s;
+      cursor: pointer;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+    }
+
+    .card i {
+      font-size: 28px;
+      color: #2a5298;
+      margin-bottom: 10px;
+    }
+
+    .card h3 {
+      margin: 10px 0 5px;
+    }
+
+    /* ===== LOGOUT MODAL ===== */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 200;
+    }
+
+    .modal-box {
+      background: #fff;
+      padding: 25px;
+      border-radius: 14px;
+      width: 90%;
+      max-width: 350px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    .modal-box h3 {
+      margin-bottom: 20px;
+    }
+
+    .modal-buttons button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      margin: 0 5px;
+    }
+
+    .yes {
+      background: red;
+      color: #fff;
+    }
+
+    .no {
+      background: #ccc;
+    }
+  </style>
 </head>
-
 <body>
 
-<!-- MENU -->
-<div class="menu" id="menu">
-  <a onclick="showSection('home')">🏠 Home</a>
-  <a onclick="showSection('complaints')">📝 Complaints</a>
-  <a onclick="showSection('about')">ℹ About</a>
-  <a href="add-business.html">➕ Add Business</a>
-</div>
-
-<div class="overlay" id="overlay" onclick="closeMenu()"></div>
-
-<!-- TOP BAR -->
-<div class="topbar">
-  <div class="menu-btn" onclick="openMenu()">☰</div>
-  <b>Dashboard</b>
-</div>
-
-<!-- PROFILE -->
-<div class="profile">
-  <img src="https://via.placeholder.com/60">
-  <div>
-    <b>Samuel (Admin)</b><br>
-    <small>Welcome back 👋</small>
-  </div>
-</div>
-
-<!-- HOME -->
-<div id="home" class="section active">
-  <div class="card">
-    <h3>Quick Actions</h3>
-    <button onclick="location.href='add-business.html'">Add Business</button>
+  <!-- ===== NAVBAR ===== -->
+  <div class="navbar">
+    <div class="logo">YourApp</div>
+    <div class="nav-links">
+      <a href="explore.html">Home</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="offers.html">Offers</a>
+      <a href="complaints.html">Complaints</a>
+      <a href="about.html">About</a>
+      <span class="logout" onclick="openLogout()">Logout</span>
+    </div>
   </div>
 
-  <div class="card">
-    <h3>Feed</h3>
-    <p>Businesses, ads and offers will appear here.</p>
-  </div>
-</div>
+  <!-- ===== CONTENT ===== -->
+  <div class="container">
 
-<!-- COMPLAINTS -->
-<div id="complaints" class="section">
-  <div class="card">
-    <h3>Complaints / Suggestions</h3>
-    <textarea placeholder="Write your message to admin"></textarea>
-    <button>Send</button>
-  </div>
-</div>
+    <!-- PROFILE CARD -->
+    <div class="profile-card">
+      <input type="file" id="imageInput" accept="image/*" hidden>
+      <img src="https://via.placeholder.com/150"
+           class="profile-img"
+           id="profileImage"
+           onclick="changeImage()">
 
-<!-- ABOUT -->
-<div id="about" class="section">
-  <div class="card">
-    <h3>About This App</h3>
-    <p><b>Name:</b> Businessio</p>
-    <p><b>Launched:</b> 2025</p>
-    <p><b>Created by:</b> S.TECH</p>
-    <p>This platform connects businesses, services and customers easily.</p>
-  </div>
-</div>
+      <div>
+        <div class="profile-name">Samuel</div>
+        <div class="profile-sub">Welcome to your dashboard</div>
+      </div>
+    </div>
 
-<script>
-function openMenu(){
-  menu.style.left="0";
-  overlay.style.display="block";
-}
-function closeMenu(){
-  menu.style.left="-260px";
-  overlay.style.display="none";
-}
-function showSection(id){
-  document.querySelectorAll(".section")
-    .forEach(s=>s.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
-  closeMenu();
-}
-</script>
+    <!-- DASHBOARD SHORTCUTS -->
+    <div class="cards">
+      <div class="card" onclick="location.href='explore.html'">
+        <i class="fa-solid fa-compass"></i>
+        <h3>Explore</h3>
+        <p>Discover businesses & products</p>
+      </div>
+
+      <div class="card" onclick="location.href='offers.html'">
+        <i class="fa-solid fa-tags"></i>
+        <h3>My Offers</h3>
+        <p>Manage your offers</p>
+      </div>
+
+      <div class="card" onclick="location.href='products.html'">
+        <i class="fa-solid fa-box"></i>
+        <h3>Products</h3>
+        <p>View your products</p>
+      </div>
+
+      <div class="card" onclick="openLogout()">
+        <i class="fa-solid fa-right-from-bracket"></i>
+        <h3>Logout</h3>
+        <p>Sign out securely</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== LOGOUT MODAL ===== -->
+  <div class="modal" id="logoutModal">
+    <div class="modal-box">
+      <h3>Are you sure you want to log out?</h3>
+      <div class="modal-buttons">
+        <button class="yes" onclick="logout()">Yes</button>
+        <button class="no" onclick="closeLogout()">No</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function changeImage() {
+      document.getElementById("imageInput").click();
+    }
+
+    document.getElementById("imageInput").addEventListener("change", function () {
+      const file = this.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          document.getElementById("profileImage").src = reader.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    function openLogout() {
+      document.getElementById("logoutModal").style.display = "flex";
+    }
+
+    function closeLogout() {
+      document.getElementById("logoutModal").style.display = "none";
+    }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = "login.html";
+    }
+  </script>
 
 </body>
 </html>
