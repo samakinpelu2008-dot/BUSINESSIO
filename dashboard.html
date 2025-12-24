@@ -6,109 +6,66 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-*{box-sizing:border-box}
-body{
-  margin:0;
-  font-family:Arial, sans-serif;
-  background:#f4f6fb;
-}
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif;}
+body{background:#f4f6fb;display:flex;min-height:100vh}
 
-/* TOP BAR */
-.topbar{
+/* SIDEBAR */
+.sidebar{
+  width:260px;
   background:#1f4cff;
   color:#fff;
-  padding:14px 16px;
   display:flex;
-  align-items:center;
-  gap:16px;
-  position:sticky;
-  top:0;
-  z-index:100;
-}
-.menu-btn{font-size:24px;cursor:pointer}
-
-/* MENU */
-.menu{
-  position:fixed;
-  top:0;left:-260px;
-  width:260px;height:100%;
-  background:#fff;
-  box-shadow:4px 0 20px rgba(0,0,0,.15);
+  flex-direction:column;
   padding:20px;
-  transition:.3s;
-  z-index:200;
+  flex-shrink:0;
 }
-.menu a{
-  display:block;
-  padding:14px;
-  text-decoration:none;
-  color:#000;
-  border-radius:10px;
-  margin-bottom:6px;
-}
-.menu a:hover{background:#f1f3ff}
-
-/* OVERLAY */
-.overlay{
-  position:fixed;
-  top:0;left:0;
-  width:100%;height:100%;
-  background:rgba(0,0,0,.3);
-  display:none;
-  z-index:150;
-}
-
-/* CONTAINER */
-.container{
-  max-width:1000px;
-  margin:auto;
-  padding:16px;
-}
-
-/* PROFILE CARD */
 .profile-card{
-  background:#fff;
-  border-radius:20px;
-  padding:20px;
   display:flex;
-  gap:20px;
   align-items:center;
-  box-shadow:0 12px 30px rgba(0,0,0,.1);
-  margin-bottom:20px;
-  flex-wrap:wrap;
+  gap:12px;
+  margin-bottom:30px;
 }
 .profile-card img{
-  width:100px;height:100px;
+  width:60px;
+  height:60px;
   border-radius:50%;
-  background:#ddd;
   object-fit:cover;
+  background:#fff;
 }
 .profile-info{
   flex:1;
 }
-.profile-info h2{margin:0;font-size:22px;}
-.profile-info p{margin:4px 0;color:#555;font-size:14px;}
-.stats{
-  display:flex;
-  gap:16px;
-  flex-wrap:wrap;
-  margin-top:10px;
+.profile-info h2{font-size:18px;margin-bottom:4px;}
+.profile-info small{font-size:13px;color:#e0e0ff;}
+.edit-btn{
+  background:#fff;color:#1f4cff;
+  padding:6px 10px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-size:12px;
 }
-.stat{
-  background:#eef2ff;
-  padding:12px 16px;
-  border-radius:12px;
+
+/* MENU ITEMS */
+.menu-item{
+  padding:12px 10px;
+  cursor:pointer;
+  border-radius:8px;
+  margin-bottom:10px;
+  font-weight:bold;
+}
+.menu-item:hover{
+  background:rgba(255,255,255,0.2);
+}
+
+/* MAIN CONTENT */
+.main-content{
   flex:1;
-  min-width:120px;
-  text-align:center;
+  padding:20px;
+  overflow-y:auto;
 }
-.stat b{display:block;font-size:16px;margin-bottom:4px}
 
-/* SECTIONS */
-.section{display:none;padding:16px}
-.section.active{display:block}
-
-/* CARDS INSIDE SECTIONS */
+/* CARD */
 .card{
   background:#fff;
   border-radius:16px;
@@ -117,122 +74,97 @@ body{
   box-shadow:0 8px 25px rgba(0,0,0,.08);
 }
 
-textarea,input,button{
-  width:100%;
-  padding:14px;
-  margin-top:10px;
-  border-radius:12px;
-  border:1px solid #ddd;
-  font-size:15px;
-}
-button{
-  background:#1f4cff;
-  color:#fff;
-  border:none;
-  cursor:pointer;
+/* RESPONSIVE */
+@media(max-width:768px){
+  body{flex-direction:column;}
+  .sidebar{width:100%;flex-direction:row;overflow-x:auto;}
+  .main-content{padding:10px;}
 }
 </style>
 </head>
 
 <body>
 
-<!-- MENU -->
-<div class="menu" id="menu">
-  <a onclick="showSection('home')">🏠 Home</a>
-  <a onclick="showSection('complaints')">📝 Complaints / Suggestions</a>
-  <a onclick="showSection('about')">ℹ About</a>
-  <a href="add-business.html">➕ Add Business</a>
-</div>
-
-<div class="overlay" id="overlay" onclick="closeMenu()"></div>
-
-<!-- TOP BAR -->
-<div class="topbar">
-  <div class="menu-btn" onclick="openMenu()">☰</div>
-  <b>Dashboard</b>
-</div>
-
-<div class="container">
-
-  <!-- PROFILE CARD -->
+<!-- SIDEBAR -->
+<div class="sidebar">
   <div class="profile-card">
-    <img id="profilePic" src="https://via.placeholder.com/100">
+    <img id="profilePic" src="https://via.placeholder.com/60">
     <div class="profile-info">
-      <h2 id="fullName">Samuel</h2>
-      <p id="email">stech3112025@gmail.com</p>
-      <p id="regDate">Registered: 24 Dec 2025</p>
-
-      <!-- QUICK STATS -->
-      <div class="stats">
-        <div class="stat">
-          <b id="totalBusinesses">12</b>
-          Businesses
-        </div>
-        <div class="stat">
-          <b id="totalClicks">345</b>
-          Clicks
-        </div>
-        <div class="stat">
-          <b id="adsViewed">78</b>
-          Ads Viewed
-        </div>
-        <div class="stat">
-          <b id="dailyActive">56</b>
-          Active Today
-        </div>
-        <div class="stat">
-          <b id="weeklyActive">132</b>
-          Active This Week
-        </div>
-      </div>
+      <h2 id="fullName">User Name</h2>
+      <small id="email">email@example.com</small>
     </div>
+    <button class="edit-btn" onclick="editProfile()">Edit</button>
   </div>
 
-  <!-- HOME FEED -->
-  <div id="home" class="section active">
-    <div class="card">
-      <h3>Feed</h3>
-      <p>Businesses, ads, and offers will appear here. Admin can monitor activities.</p>
-    </div>
-  </div>
-
-  <!-- COMPLAINTS -->
-  <div id="complaints" class="section">
-    <div class="card">
-      <h3>Complaints / Suggestions</h3>
-      <textarea placeholder="Write your message to admin"></textarea>
-      <button>Send</button>
-    </div>
-  </div>
-
-  <!-- ABOUT -->
-  <div id="about" class="section">
-    <div class="card">
-      <h3>About Businessio</h3>
-      <p><b>App Name:</b> Businessio</p>
-      <p><b>Launch Date:</b> 2025</p>
-      <p><b>Created by:</b> S.TECH</p>
-      <p><b>Purpose:</b> Connect businesses, products, services and buyers easily.</p>
-    </div>
-  </div>
-
+  <div class="menu-item" onclick="showSection('myBusinesses')">MY BUSINESSES</div>
+  <div class="menu-item" onclick="showSection('myChats')">MY CHATS</div>
+  <div class="menu-item" onclick="logout()">LOG OUT</div>
 </div>
 
-<script>
-function openMenu(){
-  menu.style.left="0";
-  overlay.style.display="block";
+<!-- MAIN CONTENT -->
+<div class="main-content">
+  <div id="myBusinesses" class="section active">
+    <div class="card">
+      <h3>My Businesses</h3>
+      <p>Here you can see your businesses, stats and actions.</p>
+    </div>
+  </div>
+
+  <div id="myChats" class="section">
+    <div class="card">
+      <h3>My Chats</h3>
+      <p>All your accepted chats will appear here.</p>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+
+// Firebase config
+const firebaseConfig = {
+  apiKey: "AIzaSyDeFlOeRoiNjqH9LAclnqnehXNY6scPqzE",
+  authDomain: "businessio-37c69.firebaseapp.com",
+  projectId: "businessio-37c69"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// AUTH STATE
+onAuthStateChanged(auth, async user=>{
+  if(user){
+    const snap = await getDoc(doc(db,"users",user.uid));
+    if(snap.exists()){
+      const data = snap.data();
+      document.getElementById("fullName").innerText = data.name || "Admin";
+      document.getElementById("email").innerText = user.email;
+      if(data.photo) document.getElementById("profilePic").src = data.photo;
+    }
+  }else{
+    location.href="index.html";
+  }
+});
+
+// LOGOUT
+function logout(){
+  signOut(auth).then(()=>location.href="index.html");
 }
-function closeMenu(){
-  menu.style.left="-260px";
-  overlay.style.display="none";
-}
+
+// SHOW SECTION
 function showSection(id){
   document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
   document.getElementById(id).classList.add("active");
-  closeMenu();
+}
+
+// EDIT PROFILE
+function editProfile(){
+  alert("Edit profile clicked! You can integrate profile editing here.");
 }
 </script>
 
 </body>
-</html>ok
+</html>
