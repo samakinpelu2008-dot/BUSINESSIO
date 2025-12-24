@@ -4,163 +4,154 @@
 <meta charset="UTF-8">
 <title>Businessio • Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
+*{box-sizing:border-box}
 body{
   margin:0;
-  font-family:Arial,sans-serif;
-  background:#f5f5f5;
+  font-family:Arial, sans-serif;
+  background:#f4f6fb;
 }
-header{
+
+/* TOP BAR */
+.topbar{
+  height:55px;
   background:#1f4cff;
   color:#fff;
   display:flex;
   align-items:center;
-  padding:15px;
-  justify-content:space-between;
-  position:sticky;
-  top:0;
-  z-index:100;
+  padding:0 15px;
 }
-header h2{margin:0;font-size:18px;}
-header .menu-btn{
+.menu-btn{
   font-size:24px;
   cursor:pointer;
+  margin-right:15px;
 }
-#sidebar{
+.title{
+  font-size:18px;
+  font-weight:bold;
+}
+
+/* SIDE MENU */
+.sidebar{
   position:fixed;
   top:0;
-  left:-250px;
-  width:250px;
+  left:-260px;
+  width:260px;
   height:100%;
   background:#fff;
-  box-shadow:2px 0 5px rgba(0,0,0,0.2);
-  padding-top:60px;
-  transition:0.3s;
-  z-index:99;
+  box-shadow:2px 0 15px rgba(0,0,0,.1);
+  transition:.3s;
+  z-index:1000;
 }
-#sidebar.active{left:0;}
-#sidebar ul{list-style:none;padding:0;}
-#sidebar ul li{
-  padding:15px 20px;
-  border-bottom:1px solid #eee;
-  cursor:pointer;
-}
-#sidebar ul li:hover{background:#f0f0f0;}
-main{
-  margin-top:60px;
+.sidebar.active{left:0}
+
+.profile-box{
+  background:#1f4cff;
+  color:#fff;
   padding:20px;
+  text-align:center;
 }
-.profile-card{
-  background:#fff;
-  padding:20px;
-  border-radius:12px;
-  box-shadow:0 5px 15px rgba(0,0,0,0.1);
-  display:flex;
-  align-items:center;
-  gap:15px;
-  margin-bottom:20px;
-}
-.profile-card img{
-  width:80px;
-  height:80px;
+.profile-box img{
+  width:70px;
+  height:70px;
   border-radius:50%;
   object-fit:cover;
-  border:2px solid #1f4cff;
-  cursor:pointer;
+  background:#fff;
 }
-.profile-card div h3{margin:0;font-size:18px;color:#1f4cff;}
-.profile-card div p{margin:5px 0 0 0;color:#555;font-size:14px;}
-.section-title{margin:15px 0 10px 0;font-size:16px;color:#1f4cff;}
+.profile-box h3{
+  margin:10px 0 0;
+  font-size:16px;
+}
+
+.nav a{
+  display:block;
+  padding:14px 18px;
+  text-decoration:none;
+  color:#333;
+  border-bottom:1px solid #eee;
+}
+.nav a:hover{background:#f4f6fb}
+
+/* CONTENT */
+.content{
+  padding:20px;
+}
 .card{
   background:#fff;
-  padding:15px;
   border-radius:12px;
-  box-shadow:0 5px 15px rgba(0,0,0,0.05);
+  padding:18px;
   margin-bottom:15px;
+  box-shadow:0 8px 20px rgba(0,0,0,.05);
 }
-.card h4{margin:0;font-size:16px;color:#1f4cff;}
-.card p{margin:5px 0 0 0;font-size:14px;color:#555;}
-.card button{
-  margin-top:10px;
-  padding:8px 12px;
+.card h4{margin-top:0}
+
+/* OVERLAY */
+.overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.4);
+  display:none;
+  z-index:900;
+}
+.overlay.show{display:block}
+
+button{
   background:#1f4cff;
-  border:none;
-  border-radius:8px;
   color:#fff;
+  border:none;
+  padding:10px 14px;
+  border-radius:8px;
   cursor:pointer;
 }
-.logout-btn{
-  margin-top:10px;
-  background:#ff4d4d!important;
-}
-.hidden{display:none;}
 </style>
 </head>
+
 <body>
 
-<header>
-  <span class="menu-btn" onclick="toggleSidebar()">☰</span>
-  <h2>Businessio Dashboard</h2>
-</header>
-
-<div id="sidebar">
-  <ul>
-    <li onclick="showSection('profile')">Profile</li>
-    <li onclick="showSection('myBusinesses')">My Businesses</li>
-    <li onclick="showSection('applications')">Applications</li>
-    <li onclick="showSection('addBusiness')">Add Business</li>
-    <li id="adminSection" class="hidden" onclick="showSection('admin')">Admin Panel</li>
-    <li onclick="logout()">Logout</li>
-  </ul>
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+  <div class="profile-box">
+    <img id="userPhoto" src="https://cdn-icons-png.flaticon.com/512/149/149071.png">
+    <h3 id="userName">Loading...</h3>
+  </div>
+  <div class="nav">
+    <a href="dashboard.html">🏠 Home</a>
+    <a href="explore.html">🔍 Explore</a>
+    <a href="add-business.html">➕ Add Business</a>
+    <a href="application.html">📄 Applications</a>
+    <a href="chat.html">💬 Chats</a>
+    <a href="profile.html">👤 Profile</a>
+    <a href="#" onclick="logout()">🚪 Logout</a>
+  </div>
 </div>
 
-<main>
-  <!-- Profile -->
-  <div id="profile" class="hidden">
-    <div class="profile-card">
-      <img id="profilePic" src="https://via.placeholder.com/80" onclick="editProfile()">
-      <div>
-        <h3 id="pName">Name</h3>
-        <p id="pBio">Bio</p>
-        <p id="pEmail">Email</p>
-      </div>
-    </div>
-    <button onclick="editProfile()">Edit Profile</button>
+<div class="overlay" id="overlay" onclick="closeMenu()"></div>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="menu-btn" onclick="openMenu()">☰</div>
+  <div class="title">Dashboard</div>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+  <div class="card">
+    <h4>Welcome 👋</h4>
+    <p id="welcomeText">Loading your info...</p>
   </div>
 
-  <!-- My Businesses -->
-  <div id="myBusinesses" class="hidden">
-    <div class="section-title">My Businesses</div>
-    <div id="businessList"></div>
+  <div class="card">
+    <h4>Your Activity</h4>
+    <p>Businesses created: <b>0</b></p>
+    <p>Applications sent: <b>0</b></p>
   </div>
-
-  <!-- Applications -->
-  <div id="applications" class="hidden">
-    <div class="section-title">My Applications</div>
-    <div id="applicationList"></div>
-  </div>
-
-  <!-- Add Business -->
-  <div id="addBusiness" class="hidden">
-    <div class="section-title">Add New Business</div>
-    <input id="bName" placeholder="Business Name"><br><br>
-    <textarea id="bDesc" placeholder="Business Description"></textarea><br><br>
-    <input id="bLocation" placeholder="Location"><br><br>
-    <button onclick="addBusiness()">Add Business</button>
-    <div id="addMsg" class="message-box"></div>
-  </div>
-
-  <!-- Admin Panel -->
-  <div id="admin" class="hidden">
-    <div class="section-title">Admin Panel</div>
-    <p>Admin-only controls will go here...</p>
-  </div>
-</main>
+</div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDeFlOeRoiNjqH9LAclnqnehXNY6scPqzE",
@@ -172,134 +163,37 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-const ADMIN_EMAIL = "stech3112025@gmail.com";
+/* MENU */
+window.openMenu = ()=>{
+  sidebar.classList.add("active");
+  overlay.classList.add("show");
+};
+window.closeMenu = ()=>{
+  sidebar.classList.remove("active");
+  overlay.classList.remove("show");
+};
 
-// DOM Elements
-const sidebar = document.getElementById("sidebar");
-const profileDiv = document.getElementById("profile");
-const myBusinessesDiv = document.getElementById("myBusinesses");
-const applicationsDiv = document.getElementById("applications");
-const addBusinessDiv = document.getElementById("addBusiness");
-const adminDiv = document.getElementById("admin");
-const adminSection = document.getElementById("adminSection");
-
-const profilePic = document.getElementById("profilePic");
-const pName = document.getElementById("pName");
-const pBio = document.getElementById("pBio");
-const pEmail = document.getElementById("pEmail");
-
-const businessList = document.getElementById("businessList");
-const applicationList = document.getElementById("applicationList");
-const addMsg = document.getElementById("addMsg");
-
-// Sidebar toggle
-function toggleSidebar(){
-  sidebar.classList.toggle("active");
-}
-
-// Show section
-function showSection(section){
-  profileDiv.classList.add("hidden");
-  myBusinessesDiv.classList.add("hidden");
-  applicationsDiv.classList.add("hidden");
-  addBusinessDiv.classList.add("hidden");
-  adminDiv.classList.add("hidden");
-
-  if(section === "profile") profileDiv.classList.remove("hidden");
-  if(section === "myBusinesses") myBusinessesDiv.classList.remove("hidden");
-  if(section === "applications") applicationsDiv.classList.remove("hidden");
-  if(section === "addBusiness") addBusinessDiv.classList.remove("hidden");
-  if(section === "admin") adminDiv.classList.remove("hidden");
-}
-
-// Custom message
-function showMessage(el,msg,type="error"){
-  el.innerText = msg;
-  el.className = `message-box ${type}`;
-  el.style.display="block";
-  setTimeout(()=>el.style.display="none",4000);
-}
-
-// Edit profile (simple alert for now)
-function editProfile(){
-  alert("Profile edit page/modal will open here");
-}
-
-// Add business
-async function addBusiness(){
-  if(!bName.value || !bDesc.value || !bLocation.value){
-    showMessage(addMsg,"Fill all fields");
+/* AUTH */
+onAuthStateChanged(auth, async (user)=>{
+  if(!user){
+    location.href="index.html";
     return;
   }
-  const user = auth.currentUser;
-  try{
-    await addDoc(collection(db,"businesses"),{
-      name:bName.value,
-      description:bDesc.value,
-      location:bLocation.value,
-      owner:user.uid,
-      created:Date.now()
-    });
-    showMessage(addMsg,"Business added successfully","success");
-    bName.value=""; bDesc.value=""; bLocation.value="";
-    loadBusinesses();
-  }catch(err){
-    showMessage(addMsg,err.message);
-  }
-}
-
-// Load profile + businesses
-async function loadDashboard(user){
   const snap = await getDoc(doc(db,"users",user.uid));
   if(snap.exists()){
     const u = snap.data();
-    pName.innerText = u.name || "No name";
-    pBio.innerText = u.bio || "No bio";
-    pEmail.innerText = user.email;
-    if(u.photo) profilePic.src = u.photo;
-  }
-
-  // Admin detection
-  if(user.email === ADMIN_EMAIL){
-    adminSection.classList.remove("hidden");
-  }
-
-  loadBusinesses();
-}
-
-// Load businesses
-async function loadBusinesses(){
-  businessList.innerHTML="";
-  const user = auth.currentUser;
-  const q = query(collection(db,"businesses"),where("owner","==",user.uid));
-  const querySnap = await getDocs(q);
-  if(querySnap.empty){
-    businessList.innerHTML="<p>No businesses yet</p>";
-  }else{
-    querySnap.forEach(docSnap=>{
-      const b = docSnap.data();
-      const div = document.createElement("div");
-      div.className="card";
-      div.innerHTML=`<h4>${b.name}</h4><p>${b.description}</p><p><b>Location:</b> ${b.location}</p>`;
-      businessList.appendChild(div);
-    });
-  }
-}
-
-// Logout
-function logout(){
-  signOut(auth).then(()=>window.location.href="index.html");
-}
-
-// Auth state
-onAuthStateChanged(auth,user=>{
-  if(!user){
-    window.location.href="index.html";
-  }else{
-    loadDashboard(user);
-    showSection("profile");
+    userName.innerText = u.name || "User";
+    welcomeText.innerText = `Welcome back, ${u.name || "User"} 🎉`;
+    if(u.photo) userPhoto.src = u.photo;
   }
 });
+
+/* LOGOUT */
+window.logout = async ()=>{
+  await signOut(auth);
+  location.href="index.html";
+};
 </script>
+
 </body>
-  </html>
+</html>
