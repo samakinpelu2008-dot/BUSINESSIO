@@ -1,185 +1,181 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Dashboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<title>Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <style>
-    body {
-      margin: 0;
-      font-family: "Segoe UI", sans-serif;
-      background: linear-gradient(135deg, #1e3c72, #2a5298);
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:#f4f6fb;
+}
 
-    .dashboard {
-      width: 95%;
-      max-width: 420px;
-      background: #f4f6fb;
-      border-radius: 22px;
-      padding: 20px;
-      box-shadow: 0 15px 40px rgba(0,0,0,0.3);
-    }
+/* TOP BAR */
+.topbar{
+  background:#1f4cff;
+  color:#fff;
+  padding:14px 16px;
+  display:flex;
+  align-items:center;
+  gap:16px;
+}
+.menu-btn{font-size:22px;cursor:pointer}
 
-    /* PROFILE CARD */
-    .profile-card {
-      background: #fff;
-      border-radius: 18px;
-      padding: 20px;
-      text-align: center;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-      margin-bottom: 25px;
-    }
+/* MENU */
+.menu{
+  position:fixed;
+  top:0;left:-260px;
+  width:260px;height:100%;
+  background:#fff;
+  box-shadow:4px 0 20px rgba(0,0,0,.15);
+  padding:20px;
+  transition:.3s;
+  z-index:10;
+}
+.menu a{
+  display:block;
+  padding:14px;
+  text-decoration:none;
+  color:#000;
+  border-radius:10px;
+}
+.menu a:hover{background:#f1f3ff}
 
-    .profile-img {
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 4px solid #2a5298;
-      cursor: pointer;
-      margin-bottom: 12px;
-    }
+/* OVERLAY */
+.overlay{
+  position:fixed;
+  top:0;left:0;
+  width:100%;height:100%;
+  background:rgba(0,0,0,.3);
+  display:none;
+  z-index:9;
+}
 
-    .profile-name {
-      font-size: 22px;
-      font-weight: 700;
-    }
+/* PROFILE CARD */
+.profile{
+  background:#fff;
+  margin:16px;
+  padding:16px;
+  border-radius:16px;
+  display:flex;
+  gap:14px;
+  align-items:center;
+  box-shadow:0 10px 25px rgba(0,0,0,.08);
+}
+.profile img{
+  width:60px;height:60px;
+  border-radius:50%;
+  background:#ddd;
+}
+.profile b{font-size:18px}
 
-    .profile-sub {
-      font-size: 14px;
-      color: #666;
-    }
+/* CONTENT */
+.section{display:none;padding:16px}
+.section.active{display:block}
 
-    /* ACTIONS */
-    .actions {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 15px;
-    }
+/* CARD */
+.card{
+  background:#fff;
+  border-radius:16px;
+  padding:16px;
+  margin-bottom:16px;
+  box-shadow:0 8px 20px rgba(0,0,0,.08);
+}
 
-    .action {
-      background: #fff;
-      border-radius: 16px;
-      padding: 18px;
-      text-align: center;
-      font-weight: 600;
-      box-shadow: 0 6px 15px rgba(0,0,0,0.12);
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
-
-    .action:hover {
-      transform: translateY(-4px);
-    }
-
-    .logout {
-      grid-column: span 2;
-      background: #ff4d4d;
-      color: #fff;
-    }
-
-    /* LOGOUT MODAL */
-    .modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.5);
-      justify-content: center;
-      align-items: center;
-    }
-
-    .modal-box {
-      background: #fff;
-      padding: 25px;
-      border-radius: 16px;
-      width: 85%;
-      max-width: 320px;
-      text-align: center;
-    }
-
-    .modal-box button {
-      padding: 10px 18px;
-      margin: 8px;
-      border: none;
-      border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-
-    .yes { background: red; color: #fff; }
-    .no { background: #ddd; }
-  </style>
+textarea,input,button{
+  width:100%;
+  padding:14px;
+  margin-top:10px;
+  border-radius:12px;
+  border:1px solid #ddd;
+}
+button{
+  background:#1f4cff;
+  color:#fff;
+  border:none;
+}
+</style>
 </head>
+
 <body>
 
-  <div class="dashboard">
+<!-- MENU -->
+<div class="menu" id="menu">
+  <a onclick="showSection('home')">🏠 Home</a>
+  <a onclick="showSection('complaints')">📝 Complaints</a>
+  <a onclick="showSection('about')">ℹ About</a>
+  <a href="add-business.html">➕ Add Business</a>
+</div>
 
-    <!-- PROFILE -->
-    <div class="profile-card">
-      <input type="file" id="imageInput" accept="image/*" hidden>
-      <img src="https://via.placeholder.com/150"
-           class="profile-img"
-           id="profileImage"
-           onclick="changeImage()">
+<div class="overlay" id="overlay" onclick="closeMenu()"></div>
 
-      <div class="profile-name">Samuel</div>
-      <div class="profile-sub">Your Dashboard</div>
-    </div>
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="menu-btn" onclick="openMenu()">☰</div>
+  <b>Dashboard</b>
+</div>
 
-    <!-- ACTIONS -->
-    <div class="actions">
-      <div class="action" onclick="location.href='offers.html'">My Offers</div>
-      <div class="action" onclick="location.href='products.html'">My Products</div>
-      <div class="action" onclick="location.href='complaints.html'">Complaints</div>
-      <div class="action logout" onclick="openLogout()">Logout</div>
-    </div>
+<!-- PROFILE -->
+<div class="profile">
+  <img src="https://via.placeholder.com/60">
+  <div>
+    <b>Samuel (Admin)</b><br>
+    <small>Welcome back 👋</small>
+  </div>
+</div>
 
+<!-- HOME -->
+<div id="home" class="section active">
+  <div class="card">
+    <h3>Quick Actions</h3>
+    <button onclick="location.href='add-business.html'">Add Business</button>
   </div>
 
-  <!-- LOGOUT CONFIRMATION -->
-  <div class="modal" id="logoutModal">
-    <div class="modal-box">
-      <h3>Log out?</h3>
-      <p>Are you sure you want to log out?</p>
-      <button class="yes" onclick="logout()">Yes</button>
-      <button class="no" onclick="closeLogout()">No</button>
-    </div>
+  <div class="card">
+    <h3>Feed</h3>
+    <p>Businesses, ads and offers will appear here.</p>
   </div>
+</div>
 
-  <script>
-    function changeImage() {
-      document.getElementById("imageInput").click();
-    }
+<!-- COMPLAINTS -->
+<div id="complaints" class="section">
+  <div class="card">
+    <h3>Complaints / Suggestions</h3>
+    <textarea placeholder="Write your message to admin"></textarea>
+    <button>Send</button>
+  </div>
+</div>
 
-    document.getElementById("imageInput").addEventListener("change", function () {
-      const file = this.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = () => {
-          document.getElementById("profileImage").src = reader.result;
-        };
-        reader.readAsDataURL(file);
-      }
-    });
+<!-- ABOUT -->
+<div id="about" class="section">
+  <div class="card">
+    <h3>About This App</h3>
+    <p><b>Name:</b> Businessio</p>
+    <p><b>Launched:</b> 2025</p>
+    <p><b>Created by:</b> S.TECH</p>
+    <p>This platform connects businesses, services and customers easily.</p>
+  </div>
+</div>
 
-    function openLogout() {
-      document.getElementById("logoutModal").style.display = "flex";
-    }
-
-    function closeLogout() {
-      document.getElementById("logoutModal").style.display = "none";
-    }
-
-    function logout() {
-      localStorage.clear();
-      window.location.href = "login.html";
-    }
-  </script>
+<script>
+function openMenu(){
+  menu.style.left="0";
+  overlay.style.display="block";
+}
+function closeMenu(){
+  menu.style.left="-260px";
+  overlay.style.display="none";
+}
+function showSection(id){
+  document.querySelectorAll(".section")
+    .forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  closeMenu();
+}
+</script>
 
 </body>
-  </html>
+</html>
