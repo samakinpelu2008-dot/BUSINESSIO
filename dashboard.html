@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Businessio • Dashboard</title>
+<title>Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -20,252 +20,162 @@ body{
   padding:14px 16px;
   display:flex;
   align-items:center;
-  gap:14px;
+  gap:16px;
 }
-.menu-btn{
-  font-size:24px;
-  cursor:pointer;
+.menu-btn{font-size:22px;cursor:pointer}
+
+/* MENU */
+.menu{
+  position:fixed;
+  top:0;left:-260px;
+  width:260px;height:100%;
+  background:#fff;
+  box-shadow:4px 0 20px rgba(0,0,0,.15);
+  padding:20px;
+  transition:.3s;
+  z-index:10;
 }
-.title{
-  font-weight:700;
-  font-size:18px;
+.menu a{
+  display:block;
+  padding:14px;
+  text-decoration:none;
+  color:#000;
+  border-radius:10px;
 }
+.menu a:hover{background:#f1f3ff}
 
 /* OVERLAY */
-#overlay{
+.overlay{
   position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.4);
+  top:0;left:0;
+  width:100%;height:100%;
+  background:rgba(0,0,0,.3);
   display:none;
   z-index:9;
 }
-#overlay.active{display:block}
 
-/* SIDEBAR */
-.sidebar{
-  position:fixed;
-  top:0;
-  left:-260px;
-  width:260px;
-  height:100%;
+/* PROFILE CARD */
+.profile{
   background:#fff;
-  box-shadow:4px 0 20px rgba(0,0,0,.15);
-  padding:15px;
-  transition:.3s ease;
-  z-index:10;
+  margin:16px;
+  padding:16px;
+  border-radius:16px;
+  display:flex;
+  gap:14px;
+  align-items:center;
+  box-shadow:0 10px 25px rgba(0,0,0,.08);
 }
-.sidebar.active{left:0}
-.sidebar h3{margin-top:0}
-.sidebar a{
-  display:block;
-  padding:11px;
-  border-radius:10px;
-  color:#333;
-  text-decoration:none;
-  margin-bottom:6px;
+.profile img{
+  width:60px;height:60px;
+  border-radius:50%;
+  background:#ddd;
 }
-.sidebar a:hover{background:#eef2ff}
+.profile b{font-size:18px}
 
 /* CONTENT */
-.content{
-  padding:16px;
-  max-width:1100px;
-  margin:auto;
-}
+.section{display:none;padding:16px}
+.section.active{display:block}
 
-/* CARDS */
+/* CARD */
 .card{
   background:#fff;
   border-radius:16px;
   padding:16px;
   margin-bottom:16px;
-  box-shadow:0 10px 30px rgba(0,0,0,.08);
+  box-shadow:0 8px 20px rgba(0,0,0,.08);
 }
 
-/* PROFILE CARD */
-.profile-card{
-  display:flex;
-  align-items:center;
-  gap:16px;
-}
-.profile-card img{
-  width:72px;
-  height:72px;
-  border-radius:50%;
-  object-fit:cover;
-  border:3px solid #1f4cff;
-}
-
-/* GRID */
-.grid{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:14px;
-}
-
-/* BUTTONS */
-button{
-  padding:13px;
-  border:none;
+textarea,input,button{
+  width:100%;
+  padding:14px;
+  margin-top:10px;
   border-radius:12px;
+  border:1px solid #ddd;
+}
+button{
   background:#1f4cff;
   color:#fff;
-  font-size:15px;
-  cursor:pointer;
+  border:none;
 }
-button.secondary{
-  background:#eef2ff;
-  color:#1f4cff;
-}
-
-.hidden{display:none}
 </style>
 </head>
 
 <body>
 
-<div id="overlay" onclick="closeMenu()"></div>
+<!-- MENU -->
+<div class="menu" id="menu">
+  <a onclick="showSection('home')">🏠 Home</a>
+  <a onclick="showSection('complaints')">📝 Complaints</a>
+  <a onclick="showSection('about')">ℹ About</a>
+  <a href="add-business.html">➕ Add Business</a>
+</div>
+
+<div class="overlay" id="overlay" onclick="closeMenu()"></div>
 
 <!-- TOP BAR -->
 <div class="topbar">
-  <div class="menu-btn" onclick="toggleMenu()">☰</div>
-  <div class="title">Businessio</div>
+  <div class="menu-btn" onclick="openMenu()">☰</div>
+  <b>Dashboard</b>
 </div>
 
-<!-- SIDEBAR -->
-<div class="sidebar" id="sidebar">
-  <h3>Menu</h3>
-
-  <a href="index.html">🏠 Home</a>
-  <a href="explore.html">🔍 Explore</a>
-  <a href="add-business.html">➕ Add Business</a>
-  <a href="chat.html">💬 Chats</a>
-  <a href="application.html">📄 Applications</a>
-  <a href="profile.html">👤 Edit Profile</a>
-
-  <div id="adminLinks" class="hidden">
-    <hr>
-    <a href="admin.html">🛠 Admin Panel</a>
-    <a href="ads-manager.html">📢 Ads Manager</a>
-    <a href="analytics.html">📊 Analytics</a>
+<!-- PROFILE -->
+<div class="profile">
+  <img src="https://via.placeholder.com/60">
+  <div>
+    <b>Samuel (Admin)</b><br>
+    <small>Welcome back 👋</small>
   </div>
-
-  <hr>
-  <a href="#" onclick="logout()">🚪 Logout</a>
 </div>
 
-<!-- CONTENT -->
-<div class="content">
-
-  <!-- PROFILE -->
-  <div class="card profile-card">
-    <img id="userPhoto"
-      src="https://cdn-icons-png.flaticon.com/512/149/149071.png">
-    <div>
-      <div id="userName" style="font-size:22px;font-weight:800">Loading...</div>
-      <small id="userEmail"></small>
-    </div>
-  </div>
-
-  <!-- STATS -->
-  <div class="grid">
-    <div class="card">
-      <h4>🏢 Businesses</h4>
-      <b style="font-size:22px">0</b>
-    </div>
-    <div class="card">
-      <h4>📄 Applications</h4>
-      <b style="font-size:22px">0</b>
-    </div>
-    <div class="card">
-      <h4>💬 Chats</h4>
-      <b style="font-size:22px">0</b>
-    </div>
-    <div class="card">
-      <h4>📢 Ads</h4>
-      <b style="font-size:22px">0</b>
-    </div>
-  </div>
-
-  <!-- QUICK ACTIONS -->
+<!-- HOME -->
+<div id="home" class="section active">
   <div class="card">
-    <h4>Quick Actions</h4>
-    <div class="grid">
-      <button onclick="location.href='add-business.html'">Add Business</button>
-      <button class="secondary" onclick="location.href='explore.html'">Explore</button>
-    </div>
+    <h3>Quick Actions</h3>
+    <button onclick="location.href='add-business.html'">Add Business</button>
   </div>
 
+  <div class="card">
+    <h3>Feed</h3>
+    <p>Businesses, ads and offers will appear here.</p>
+  </div>
 </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+<!-- COMPLAINTS -->
+<div id="complaints" class="section">
+  <div class="card">
+    <h3>Complaints / Suggestions</h3>
+    <textarea placeholder="Write your message to admin"></textarea>
+    <button>Send</button>
+  </div>
+</div>
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDeFlOeRoiNjqH9LAclnqnehXNY6scPqzE",
-  authDomain: "businessio-37c69.firebaseapp.com",
-  projectId: "businessio-37c69"
-};
+<!-- ABOUT -->
+<div id="about" class="section">
+  <div class="card">
+    <h3>About This App</h3>
+    <p><b>Name:</b> Businessio</p>
+    <p><b>Launched:</b> 2025</p>
+    <p><b>Created by:</b> S.TECH</p>
+    <p>This platform connects businesses, services and customers easily.</p>
+  </div>
+</div>
 
-const ADMIN_EMAIL = "stech3112025@gmail.com";
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-/* AUTH */
-onAuthStateChanged(auth, async (user)=>{
-  if(!user){
-    location.href="index.html";
-    return;
-  }
-
-  userEmail.innerText = user.email;
-
-  if(user.email === ADMIN_EMAIL){
-    adminLinks.classList.remove("hidden");
-  }
-
-  const snap = await getDoc(doc(db,"users",user.uid));
-  if(snap.exists()){
-    const u = snap.data();
-    userName.innerText = u.name || "User";
-    if(u.photo) userPhoto.src = u.photo;
-  }
-});
-
-/* LOGOUT */
-window.logout = async ()=>{
-  await signOut(auth);
-  location.href="index.html";
-};
-
-/* MENU */
-let startX = 0;
-
-window.toggleMenu = ()=>{
-  sidebar.classList.toggle("active");
-  overlay.classList.toggle("active");
-};
-
-window.closeMenu = ()=>{
-  sidebar.classList.remove("active");
-  overlay.classList.remove("active");
-};
-
-sidebar.addEventListener("touchstart", e=>{
-  startX = e.touches[0].clientX;
-});
-
-sidebar.addEventListener("touchmove", e=>{
-  let moveX = e.touches[0].clientX;
-  if(startX - moveX > 80){
-    closeMenu();
-  }
-});
+<script>
+function openMenu(){
+  menu.style.left="0";
+  overlay.style.display="block";
+}
+function closeMenu(){
+  menu.style.left="-260px";
+  overlay.style.display="none";
+}
+function showSection(id){
+  document.querySelectorAll(".section")
+    .forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  closeMenu();
+}
 </script>
 
 </body>
-      </html>
+</html>
