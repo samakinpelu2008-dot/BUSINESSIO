@@ -4,68 +4,100 @@
 <meta charset="UTF-8">
 <title>Businessio • Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif;}
-body{background:#f4f6fb;display:flex;min-height:100vh}
+body{background:#f4f6fb;}
 
-/* SIDEBAR */
-.sidebar{
-  width:260px;
+/* TOP BAR */
+.topbar{
+  height:60px;
   background:#1f4cff;
   color:#fff;
   display:flex;
-  flex-direction:column;
-  padding:20px;
-  flex-shrink:0;
+  align-items:center;
+  padding:0 16px;
+  gap:16px;
+  position:sticky;
+  top:0;
+  z-index:100;
 }
+.menu-btn{font-size:28px;cursor:pointer;}
+
+/* SLIDE MENU */
+.menu{
+  position:fixed;
+  top:0;left:-250px;
+  width:250px;
+  height:100%;
+  background:#fff;
+  box-shadow:4px 0 20px rgba(0,0,0,.15);
+  padding:20px;
+  transition:.3s;
+  z-index:200;
+}
+.menu a{
+  display:block;
+  padding:12px;
+  text-decoration:none;
+  color:#000;
+  border-radius:8px;
+  margin-bottom:8px;
+  font-weight:bold;
+}
+.menu a:hover{background:#eef2ff;}
+.overlay{
+  position:fixed;
+  top:0;left:0;
+  width:100%;height:100%;
+  background:rgba(0,0,0,.3);
+  display:none;
+  z-index:150;
+}
+
+/* PROFILE CARD */
 .profile-card{
+  background:#fff;
+  margin:16px;
+  padding:16px;
+  border-radius:16px;
   display:flex;
   align-items:center;
-  gap:12px;
-  margin-bottom:30px;
+  gap:16px;
+  position:relative;
+  box-shadow:0 12px 25px rgba(0,0,0,.12);
 }
 .profile-card img{
-  width:60px;
-  height:60px;
+  width:70px;
+  height:70px;
   border-radius:50%;
+  background:#ddd;
   object-fit:cover;
-  background:#fff;
 }
 .profile-info{
   flex:1;
 }
-.profile-info h2{font-size:18px;margin-bottom:4px;}
-.profile-info small{font-size:13px;color:#e0e0ff;}
+.profile-info h2{font-size:20px;margin-bottom:4px;}
 .edit-btn{
-  background:#fff;color:#1f4cff;
-  padding:6px 10px;
+  position:absolute;
+  bottom:10px;
+  right:10px;
+  background:#1f4cff;
+  color:#fff;
   border:none;
   border-radius:8px;
+  padding:6px 12px;
   cursor:pointer;
-  font-size:12px;
-}
-
-/* MENU ITEMS */
-.menu-item{
-  padding:12px 10px;
-  cursor:pointer;
-  border-radius:8px;
-  margin-bottom:10px;
-  font-weight:bold;
-}
-.menu-item:hover{
-  background:rgba(255,255,255,0.2);
 }
 
 /* MAIN CONTENT */
 .main-content{
-  flex:1;
-  padding:20px;
-  overflow-y:auto;
+  margin:16px;
+  min-height:calc(100vh - 120px);
 }
 
-/* CARD */
+/* SECTION CARDS */
+.section{display:none;}
+.section.active{display:block;}
 .card{
   background:#fff;
   border-radius:16px;
@@ -74,46 +106,104 @@ body{background:#f4f6fb;display:flex;min-height:100vh}
   box-shadow:0 8px 25px rgba(0,0,0,.08);
 }
 
-/* RESPONSIVE */
-@media(max-width:768px){
-  body{flex-direction:column;}
-  .sidebar{width:100%;flex-direction:row;overflow-x:auto;}
-  .main-content{padding:10px;}
+/* CHAT HALLWAY */
+.chat-list{display:flex;flex-direction:column;}
+.chat-item{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:10px;
+  border-radius:10px;
+  cursor:pointer;
+  margin-bottom:8px;
 }
+.chat-item:hover{background:#eef2ff;}
+.chat-item img{width:50px;height:50px;border-radius:50%;object-fit:cover;}
+.chat-item-info{flex:1;}
+.chat-item-info h4{margin-bottom:2px;}
+.chat-item-info small{font-size:12px;color:#666;}
+
+/* CHAT ROOM */
+.chat-room{display:none;flex-direction:column;gap:8px;}
+.chat-msg{padding:8px 12px;border-radius:12px;max-width:70%;}
+.chat-msg.user{background:#1f4cff;color:#fff;margin-left:auto;}
+.chat-msg.contact{background:#eee;margin-right:auto;}
+.chat-input{display:flex;gap:8px;margin-top:8px;}
+.chat-input input{flex:1;padding:10px;border-radius:8px;border:1px solid #ccc;}
+.chat-input button{padding:10px 16px;border:none;border-radius:8px;background:#1f4cff;color:#fff;cursor:pointer;}
 </style>
 </head>
-
 <body>
 
-<!-- SIDEBAR -->
-<div class="sidebar">
-  <div class="profile-card">
-    <img id="profilePic" src="https://via.placeholder.com/60">
-    <div class="profile-info">
-      <h2 id="fullName">User Name</h2>
-      <small id="email">email@example.com</small>
-    </div>
-    <button class="edit-btn" onclick="editProfile()">Edit</button>
-  </div>
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="menu-btn" onclick="openMenu()">☰</div>
+  <b>Dashboard</b>
+</div>
 
-  <div class="menu-item" onclick="showSection('myBusinesses')">MY BUSINESSES</div>
-  <div class="menu-item" onclick="showSection('myChats')">MY CHATS</div>
-  <div class="menu-item" onclick="logout()">LOG OUT</div>
+<!-- SLIDE MENU -->
+<div class="menu" id="menu">
+  <a onclick="showSection('home')">Home</a>
+  <a onclick="showSection('myBusinesses')">My Businesses</a>
+  <a onclick="showSection('myChats')">My Chats</a>
+  <a onclick="showSection('complaints')">Complaints / Suggestions</a>
+  <a onclick="showSection('about')">About</a>
+  <a onclick="logout()">Log Out</a>
+</div>
+<div class="overlay" id="overlay" onclick="closeMenu()"></div>
+
+<!-- PROFILE CARD -->
+<div class="profile-card">
+  <img id="profilePic" src="https://via.placeholder.com/70">
+  <div class="profile-info">
+    <h2 id="fullName">User Name</h2>
+    <small id="email">email@example.com</small>
+  </div>
+  <button class="edit-btn" onclick="editProfile()">Edit</button>
 </div>
 
 <!-- MAIN CONTENT -->
 <div class="main-content">
-  <div id="myBusinesses" class="section active">
-    <div class="card">
-      <h3>My Businesses</h3>
-      <p>Here you can see your businesses, stats and actions.</p>
+
+  <!-- HOME -->
+  <div id="home" class="section active">
+    <div id="homeFeed"></div>
+  </div>
+
+  <!-- MY BUSINESSES -->
+  <div id="myBusinesses" class="section">
+    <div id="businessList"></div>
+  </div>
+
+  <!-- MY CHATS -->
+  <div id="myChats" class="section">
+    <div class="chat-list" id="chatList"></div>
+    <div class="chat-room" id="chatRoom">
+      <div id="chatMessages"></div>
+      <div class="chat-input">
+        <input id="chatInput" placeholder="Type message...">
+        <button onclick="sendMessage()">Send</button>
+      </div>
+      <button onclick="backToHallway()">Back</button>
     </div>
   </div>
 
-  <div id="myChats" class="section">
+  <!-- COMPLAINTS -->
+  <div id="complaints" class="section">
     <div class="card">
-      <h3>My Chats</h3>
-      <p>All your accepted chats will appear here.</p>
+      <textarea id="complaintText" placeholder="Write your message" style="width:100%;height:80px;padding:8px;border-radius:8px;border:1px solid #ccc;"></textarea>
+      <button onclick="sendComplaint()" style="margin-top:8px;padding:10px 16px;background:#1f4cff;color:#fff;border:none;border-radius:8px;cursor:pointer;">Send</button>
+    </div>
+  </div>
+
+  <!-- ABOUT -->
+  <div id="about" class="section">
+    <div class="card">
+      <h3>About Businessio</h3>
+      <p>App Name: Businessio</p>
+      <p>Launch Date: 2025</p>
+      <p>Created by: S.TECH</p>
+      <p>Purpose: Connect businesses, products, services, and buyers easily.</p>
     </div>
   </div>
 </div>
@@ -121,9 +211,8 @@ body{background:#f4f6fb;display:flex;min-height:100vh}
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, collection, getDocs, addDoc, query, where, orderBy } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
 
-// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyDeFlOeRoiNjqH9LAclnqnehXNY6scPqzE",
   authDomain: "businessio-37c69.firebaseapp.com",
@@ -134,9 +223,12 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// AUTH STATE
+let currentUser = null;
+
+// Load user info
 onAuthStateChanged(auth, async user=>{
   if(user){
+    currentUser = user;
     const snap = await getDoc(doc(db,"users",user.uid));
     if(snap.exists()){
       const data = snap.data();
@@ -144,25 +236,133 @@ onAuthStateChanged(auth, async user=>{
       document.getElementById("email").innerText = user.email;
       if(data.photo) document.getElementById("profilePic").src = data.photo;
     }
+    loadHomeFeed();
+    loadMyBusinesses();
+    loadChatHallway();
   }else{
     location.href="index.html";
   }
 });
 
-// LOGOUT
-function logout(){
-  signOut(auth).then(()=>location.href="index.html");
-}
+// Menu open/close
+function openMenu(){menu.style.left="0";overlay.style.display="block";}
+function closeMenu(){menu.style.left="-250px";overlay.style.display="none";}
 
-// SHOW SECTION
+// Show section
 function showSection(id){
   document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
   document.getElementById(id).classList.add("active");
+  closeMenu();
 }
 
-// EDIT PROFILE
-function editProfile(){
-  alert("Edit profile clicked! You can integrate profile editing here.");
+// Logout
+function logout(){signOut(auth).then(()=>location.href="index.html");}
+
+// Edit profile
+function editProfile(){alert("Implement profile editing here");}
+
+// =================== HOME FEED ===================
+async function loadHomeFeed(){
+  const homeFeed = document.getElementById("homeFeed");
+  homeFeed.innerHTML="";
+  const q = query(collection(db,"businesses"), orderBy("createdAt","desc"));
+  const snapshot = await getDocs(q);
+  snapshot.forEach(docSnap=>{
+    const b = docSnap.data();
+    const card = document.createElement("div");
+    card.className="card";
+    card.innerHTML=`<h3>${b.name}</h3><p>Type: ${b.type}</p><p>Location: ${b.location || "N/A"}</p>`;
+    homeFeed.appendChild(card);
+  });
+}
+
+// =================== MY BUSINESSES ===================
+async function loadMyBusinesses(){
+  const businessList = document.getElementById("businessList");
+  businessList.innerHTML="";
+  const q = query(collection(db,"businesses"), where("createdBy","==",currentUser.uid), orderBy("createdAt","desc"));
+  const snapshot = await getDocs(q);
+  snapshot.forEach(docSnap=>{
+    const b = docSnap.data();
+    const card = document.createElement("div");
+    card.className="card";
+    card.innerHTML=`<h3>${b.name}</h3><p>Type: ${b.type}</p><p>Status: ${b.status || "active"}</p>`;
+    businessList.appendChild(card);
+  });
+}
+
+// =================== CHAT ===================
+let activeChat = null;
+
+async function loadChatHallway(){
+  const chatList = document.getElementById("chatList");
+  chatList.innerHTML="";
+  // Example: load chats involving currentUser
+  const q = query(collection(db,"chats"), where("participants","array-contains",currentUser.uid));
+  const snapshot = await getDocs(q);
+  snapshot.forEach(docSnap=>{
+    const c = docSnap.data();
+    const chatItem = document.createElement("div");
+    chatItem.className="chat-item";
+    chatItem.onclick=()=>openChat(docSnap.id);
+    chatItem.innerHTML=`<img src="https://via.placeholder.com/50"><div class="chat-item-info"><h4>${c.name}</h4><small>${c.lastMessage||""}</small></div>`;
+    chatList.appendChild(chatItem);
+  });
+}
+
+function openChat(chatId){
+  activeChat = chatId;
+  document.getElementById("chatList").style.display="none";
+  document.getElementById("chatRoom").style.display="flex";
+  loadMessages();
+}
+
+function backToHallway(){
+  document.getElementById("chatRoom").style.display="none";
+  document.getElementById("chatList").style.display="flex";
+  activeChat = null;
+}
+
+async function loadMessages(){
+  const chatMessages = document.getElementById("chatMessages");
+  chatMessages.innerHTML="";
+  if(!activeChat) return;
+  const chatSnap = await getDoc(doc(db,"chats",activeChat));
+  if(chatSnap.exists()){
+    const c = chatSnap.data();
+    c.messages?.forEach(m=>{
+      const div = document.createElement("div");
+      div.className="chat-msg "+(m.sender==currentUser.uid?"user":"contact");
+      div.innerText=m.text;
+      chatMessages.appendChild(div);
+    });
+  }
+}
+
+async function sendMessage(){
+  const input = document.getElementById("chatInput");
+  if(!input.value) return;
+  const chatRef = doc(db,"chats",activeChat);
+  const chatSnap = await getDoc(chatRef);
+  let messages = [];
+  if(chatSnap.exists()) messages = chatSnap.data().messages || [];
+  messages.push({sender:currentUser.uid,text:input.value,time:Date.now()});
+  await chatRef.update({messages});
+  input.value="";
+  loadMessages();
+}
+
+// =================== COMPLAINTS ===================
+async function sendComplaint(){
+  const txt = document.getElementById("complaintText").value;
+  if(!txt) return alert("Please type a message");
+  await addDoc(collection(db,"complaints"),{
+    user:currentUser.uid,
+    message:txt,
+    createdAt:Date.now()
+  });
+  alert("Complaint sent!");
+  document.getElementById("complaintText").value="";
 }
 </script>
 
