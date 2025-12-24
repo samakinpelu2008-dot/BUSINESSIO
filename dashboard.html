@@ -10,15 +10,17 @@
 body{
   margin:0;
   font-family:Arial, sans-serif;
-  background:#f5f7fb;
+  background:#f4f6fb;
 }
+
+/* TOP BAR */
 .topbar{
   background:#1f4cff;
   color:#fff;
-  padding:12px 15px;
+  padding:14px 16px;
   display:flex;
   align-items:center;
-  gap:12px;
+  gap:14px;
 }
 .menu-btn{
   font-size:24px;
@@ -28,6 +30,18 @@ body{
   font-weight:700;
   font-size:18px;
 }
+
+/* OVERLAY */
+#overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.4);
+  display:none;
+  z-index:9;
+}
+#overlay.active{display:block}
+
+/* SIDEBAR */
 .sidebar{
   position:fixed;
   top:0;
@@ -37,74 +51,91 @@ body{
   background:#fff;
   box-shadow:4px 0 20px rgba(0,0,0,.15);
   padding:15px;
-  transition:.3s;
+  transition:.3s ease;
   z-index:10;
 }
 .sidebar.active{left:0}
 .sidebar h3{margin-top:0}
 .sidebar a{
   display:block;
-  padding:10px;
-  border-radius:8px;
+  padding:11px;
+  border-radius:10px;
   color:#333;
   text-decoration:none;
   margin-bottom:6px;
 }
 .sidebar a:hover{background:#eef2ff}
+
+/* CONTENT */
 .content{
-  padding:15px;
+  padding:16px;
+  max-width:1100px;
+  margin:auto;
 }
+
+/* CARDS */
 .card{
   background:#fff;
-  border-radius:14px;
-  padding:15px;
-  margin-bottom:15px;
+  border-radius:16px;
+  padding:16px;
+  margin-bottom:16px;
   box-shadow:0 10px 30px rgba(0,0,0,.08);
 }
+
+/* PROFILE CARD */
 .profile-card{
   display:flex;
   align-items:center;
-  gap:15px;
+  gap:16px;
 }
 .profile-card img{
-  width:70px;
-  height:70px;
+  width:72px;
+  height:72px;
   border-radius:50%;
   object-fit:cover;
   border:3px solid #1f4cff;
 }
+
+/* GRID */
 .grid{
   display:grid;
   grid-template-columns:repeat(2,1fr);
-  gap:12px;
+  gap:14px;
 }
+
+/* BUTTONS */
 button{
-  padding:12px;
+  padding:13px;
   border:none;
-  border-radius:10px;
+  border-radius:12px;
   background:#1f4cff;
   color:#fff;
-  cursor:pointer;
   font-size:15px;
+  cursor:pointer;
 }
 button.secondary{
   background:#eef2ff;
   color:#1f4cff;
 }
+
 .hidden{display:none}
 </style>
 </head>
 
 <body>
 
+<div id="overlay" onclick="closeMenu()"></div>
+
+<!-- TOP BAR -->
 <div class="topbar">
   <div class="menu-btn" onclick="toggleMenu()">☰</div>
-  <div class="title">Businessio Dashboard</div>
+  <div class="title">Businessio</div>
 </div>
 
 <!-- SIDEBAR -->
 <div class="sidebar" id="sidebar">
   <h3>Menu</h3>
+
   <a href="index.html">🏠 Home</a>
   <a href="explore.html">🔍 Explore</a>
   <a href="add-business.html">➕ Add Business</a>
@@ -156,12 +187,12 @@ button.secondary{
     </div>
   </div>
 
-  <!-- ACTIONS -->
+  <!-- QUICK ACTIONS -->
   <div class="card">
     <h4>Quick Actions</h4>
     <div class="grid">
       <button onclick="location.href='add-business.html'">Add Business</button>
-      <button onclick="location.href='explore.html'" class="secondary">Explore</button>
+      <button class="secondary" onclick="location.href='explore.html'">Explore</button>
     </div>
   </div>
 
@@ -184,6 +215,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+/* AUTH */
 onAuthStateChanged(auth, async (user)=>{
   if(!user){
     location.href="index.html";
@@ -204,15 +236,36 @@ onAuthStateChanged(auth, async (user)=>{
   }
 });
 
+/* LOGOUT */
 window.logout = async ()=>{
   await signOut(auth);
   location.href="index.html";
-}
+};
+
+/* MENU */
+let startX = 0;
 
 window.toggleMenu = ()=>{
   sidebar.classList.toggle("active");
-}
+  overlay.classList.toggle("active");
+};
+
+window.closeMenu = ()=>{
+  sidebar.classList.remove("active");
+  overlay.classList.remove("active");
+};
+
+sidebar.addEventListener("touchstart", e=>{
+  startX = e.touches[0].clientX;
+});
+
+sidebar.addEventListener("touchmove", e=>{
+  let moveX = e.touches[0].clientX;
+  if(startX - moveX > 80){
+    closeMenu();
+  }
+});
 </script>
 
 </body>
-</html>
+      </html>
