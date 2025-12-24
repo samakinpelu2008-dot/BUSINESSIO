@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard</title>
+<title>Businessio • Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -21,8 +21,11 @@ body{
   display:flex;
   align-items:center;
   gap:16px;
+  position:sticky;
+  top:0;
+  z-index:100;
 }
-.menu-btn{font-size:22px;cursor:pointer}
+.menu-btn{font-size:24px;cursor:pointer}
 
 /* MENU */
 .menu{
@@ -33,7 +36,7 @@ body{
   box-shadow:4px 0 20px rgba(0,0,0,.15);
   padding:20px;
   transition:.3s;
-  z-index:10;
+  z-index:200;
 }
 .menu a{
   display:block;
@@ -41,6 +44,7 @@ body{
   text-decoration:none;
   color:#000;
   border-radius:10px;
+  margin-bottom:6px;
 }
 .menu a:hover{background:#f1f3ff}
 
@@ -51,38 +55,66 @@ body{
   width:100%;height:100%;
   background:rgba(0,0,0,.3);
   display:none;
-  z-index:9;
+  z-index:150;
+}
+
+/* CONTAINER */
+.container{
+  max-width:1000px;
+  margin:auto;
+  padding:16px;
 }
 
 /* PROFILE CARD */
-.profile{
+.profile-card{
   background:#fff;
-  margin:16px;
-  padding:16px;
-  border-radius:16px;
+  border-radius:20px;
+  padding:20px;
   display:flex;
-  gap:14px;
+  gap:20px;
   align-items:center;
-  box-shadow:0 10px 25px rgba(0,0,0,.08);
+  box-shadow:0 12px 30px rgba(0,0,0,.1);
+  margin-bottom:20px;
+  flex-wrap:wrap;
 }
-.profile img{
-  width:60px;height:60px;
+.profile-card img{
+  width:100px;height:100px;
   border-radius:50%;
   background:#ddd;
+  object-fit:cover;
 }
-.profile b{font-size:18px}
+.profile-info{
+  flex:1;
+}
+.profile-info h2{margin:0;font-size:22px;}
+.profile-info p{margin:4px 0;color:#555;font-size:14px;}
+.stats{
+  display:flex;
+  gap:16px;
+  flex-wrap:wrap;
+  margin-top:10px;
+}
+.stat{
+  background:#eef2ff;
+  padding:12px 16px;
+  border-radius:12px;
+  flex:1;
+  min-width:120px;
+  text-align:center;
+}
+.stat b{display:block;font-size:16px;margin-bottom:4px}
 
-/* CONTENT */
+/* SECTIONS */
 .section{display:none;padding:16px}
 .section.active{display:block}
 
-/* CARD */
+/* CARDS INSIDE SECTIONS */
 .card{
   background:#fff;
   border-radius:16px;
   padding:16px;
   margin-bottom:16px;
-  box-shadow:0 8px 20px rgba(0,0,0,.08);
+  box-shadow:0 8px 25px rgba(0,0,0,.08);
 }
 
 textarea,input,button{
@@ -91,11 +123,13 @@ textarea,input,button{
   margin-top:10px;
   border-radius:12px;
   border:1px solid #ddd;
+  font-size:15px;
 }
 button{
   background:#1f4cff;
   color:#fff;
   border:none;
+  cursor:pointer;
 }
 </style>
 </head>
@@ -105,7 +139,7 @@ button{
 <!-- MENU -->
 <div class="menu" id="menu">
   <a onclick="showSection('home')">🏠 Home</a>
-  <a onclick="showSection('complaints')">📝 Complaints</a>
+  <a onclick="showSection('complaints')">📝 Complaints / Suggestions</a>
   <a onclick="showSection('about')">ℹ About</a>
   <a href="add-business.html">➕ Add Business</a>
 </div>
@@ -118,46 +152,70 @@ button{
   <b>Dashboard</b>
 </div>
 
-<!-- PROFILE -->
-<div class="profile">
-  <img src="https://via.placeholder.com/60">
-  <div>
-    <b>Samuel (Admin)</b><br>
-    <small>Welcome back 👋</small>
-  </div>
-</div>
+<div class="container">
 
-<!-- HOME -->
-<div id="home" class="section active">
-  <div class="card">
-    <h3>Quick Actions</h3>
-    <button onclick="location.href='add-business.html'">Add Business</button>
+  <!-- PROFILE CARD -->
+  <div class="profile-card">
+    <img id="profilePic" src="https://via.placeholder.com/100">
+    <div class="profile-info">
+      <h2 id="fullName">Samuel</h2>
+      <p id="email">stech3112025@gmail.com</p>
+      <p id="regDate">Registered: 24 Dec 2025</p>
+
+      <!-- QUICK STATS -->
+      <div class="stats">
+        <div class="stat">
+          <b id="totalBusinesses">12</b>
+          Businesses
+        </div>
+        <div class="stat">
+          <b id="totalClicks">345</b>
+          Clicks
+        </div>
+        <div class="stat">
+          <b id="adsViewed">78</b>
+          Ads Viewed
+        </div>
+        <div class="stat">
+          <b id="dailyActive">56</b>
+          Active Today
+        </div>
+        <div class="stat">
+          <b id="weeklyActive">132</b>
+          Active This Week
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div class="card">
-    <h3>Feed</h3>
-    <p>Businesses, ads and offers will appear here.</p>
+  <!-- HOME FEED -->
+  <div id="home" class="section active">
+    <div class="card">
+      <h3>Feed</h3>
+      <p>Businesses, ads, and offers will appear here. Admin can monitor activities.</p>
+    </div>
   </div>
-</div>
 
-<!-- COMPLAINTS -->
-<div id="complaints" class="section">
-  <div class="card">
-    <h3>Complaints / Suggestions</h3>
-    <textarea placeholder="Write your message to admin"></textarea>
-    <button>Send</button>
+  <!-- COMPLAINTS -->
+  <div id="complaints" class="section">
+    <div class="card">
+      <h3>Complaints / Suggestions</h3>
+      <textarea placeholder="Write your message to admin"></textarea>
+      <button>Send</button>
+    </div>
   </div>
-</div>
 
-<!-- ABOUT -->
-<div id="about" class="section">
-  <div class="card">
-    <h3>About This App</h3>
-    <p><b>Name:</b> Businessio</p>
-    <p><b>Launched:</b> 2025</p>
-    <p><b>Created by:</b> S.TECH</p>
-    <p>This platform connects businesses, services and customers easily.</p>
+  <!-- ABOUT -->
+  <div id="about" class="section">
+    <div class="card">
+      <h3>About Businessio</h3>
+      <p><b>App Name:</b> Businessio</p>
+      <p><b>Launch Date:</b> 2025</p>
+      <p><b>Created by:</b> S.TECH</p>
+      <p><b>Purpose:</b> Connect businesses, products, services and buyers easily.</p>
+    </div>
   </div>
+
 </div>
 
 <script>
@@ -170,12 +228,11 @@ function closeMenu(){
   overlay.style.display="none";
 }
 function showSection(id){
-  document.querySelectorAll(".section")
-    .forEach(s=>s.classList.remove("active"));
+  document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
   document.getElementById(id).classList.add("active");
   closeMenu();
 }
 </script>
 
 </body>
-</html>
+</html>ok
